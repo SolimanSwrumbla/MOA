@@ -17,4 +17,9 @@ public class DoubleCost implements PartialOrder<DoubleCost> {
     public boolean isLessOrEqualThan(DoubleCost other) {
         return(this.cost1 <= other.cost1 && this.cost2 <= other.cost2);
     }
+
+    @Override
+    public DoubleCost add(DoubleCost other) {
+        return new DoubleCost(this.cost1 + other.cost1, this.cost2 + other.cost2);
+    }
 }
