@@ -1,125 +1,112 @@
 package com.soliman;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.jgrapht.Graphs;
-import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 
 public class Moa {
 
-    private static <Node> List<Node> generateSuccessors(Node Node) {
-        // Implement the logic to generate alternative Nodes based on your domain-specific requirements
-        List<Node> successors = new ArrayList<>();
-        for (Alternative alternative : Node.alternatives) {
-            successors.add(alternative.Node);
-        }
-        return successors;
-    }
-
-    private static <Node> double heuristicFunction(Node Node) {
-        // Implement the heuristic function based on your domain-specific requirements
-        return 0.0;
-    }
-
-    public static <Node, Cost extends PartialOrder<Cost>> List<Node> search(Node startNode) {
+    public static <Node, Cost extends PartialOrder<Cost>> Map<Node, Set<Cost>> search(DefaultDirectedWeightedGraph<Node, LabeledEdge<Cost>> graph, Node startNode, Set<Node> endNodes, Cost zero, HeuristicFunction<Node, Cost> heuristicFunction) {
         Set<Node> open = new HashSet<>();
-        Set<Node> ND = new HashSet<>();
         Set<Node> closed = new HashSet<>();
-        Set<Node> solution = new HashSet<>();
-        Set<Cost> solutionCosts = new HashSet<>();
-        Set<Node> solutionGoals = new HashSet<>();
+        Map<Node, Set<Cost>> solutionCosts = new HashMap<>();
         Map<Node, Set<Cost>> label = new HashMap<>();
 
         open.add(startNode);
-
+        label.put(startNode, Set.of(zero));
+        
+        mainLoop:
         while (!open.isEmpty()) {
-
-            // Step 1: Find Nodes in OPEN that are not dominated by solution costs and Node selection values
-
-            // Creiamo un iteratore MOAStar per il grafo
-            MOAStarIterator<String, DefaultWeightedEdge> iterator = new MOAStarIterator<>(graph, "S", "D", numObjectives);
-            // Inizializziamo l'insieme OPEN con il nodo iniziale
-            Set<String> open = new HashSet<>();
-            open.add("S");
-            // Inizializziamo l'insieme delle soluzioni e dei costi delle soluzioni come vuoti
-            Set<String> solutionGoals = new HashSet<>();
-            Set<Vector> solutionCosts = new HashSet<>();
-            // Troviamo l'insieme ND dei nodi in OPEN che non sono dominati
-            Set<String> nonDominated = iterator.findNonDominatedNodesInOpen(open, solutionGoals, solutionCosts);
-            // Stampiamo l'insieme ND
-            System.out.println(nonDominated); // [S]
-
-            // Step 2: Terminate or select a Node for expansion
-
-            String selected = null;
-            if (!nonDominated.isEmpty()) {
-                selected = Collections.min(nonDominated, new Comparator<String>() {
-                    @Override
-                    public int compare(String n1, String n2) {
-                        double f1 = getCost(n1) + heuristicFunction(n1);
-                        double f2 = getCost(n2) + heuristicFunction(n2);
-                        return Double.compare(f1, f2);
-                    }
-                });
-            } else {
-                selected = Collections.min(open, new Comparator<String>() {
-                    @Override
-                    public int compare(String n1, String n2) {
-                        double f1 = getCost(n1) + heuristicFunction(n1);
-                        double f2 = getCost(n2) + heuristicFunction(n2);
-                        return Double.compare(f1, f2);
-                    }
-                });
-            }
-            open.remove(selected);
-            closed.add(selected);
-
-            // Step 3: Bookkeeping to maintain costs and Node selection values
-
-            for (String successor : Graphs.successorListOf(graph, selected)) {
-                if (!closed.contains(successor)) {
-                    Vector cost = getCost(successor);
-                    Set<Vector> costs = label.get(successor);
-                    if (costs == null) {
-                        costs = new HashSet<>();
-                        label.put(successor, costs);
-                    }
-                    Set<Vector> dominatedCosts = new HashSet<>();
-                    for (Vector c : costs) {
-                        if (cost.greaterThan(c)) {
-                            dominatedCosts.add(c);
+            Set<Node> ND = new HashSet<>();
+            for (Node node:open) {
+                for (Cost cost:label.get(node)) {
+                    boolean isCostND = true;
+                    for (Node otherNode:solutionCosts.keySet()) {
+                        if (node != otherNode) {
+                            for (Cost otherCost:solutionCosts.get(otherNode)){
+                                if (otherCost.isLessThan(cost)){
+                                    isCostND = false;
+                                }
+                            }
                         }
                     }
-                    costs.removeAll(dominatedCosts);
-                    if (!dominatesAny(costs, cost)) {
-                        costs.add(cost);
-                        open.add(successor);
-                        nonDominated.add(successor);
+                    for (Node otherNode:open) {
+                        if (node != otherNode) {
+                            for (Cost otherCost:label.get(otherNode)){
+                                if (otherCost.isLessThan(cost)){
+                                    isCostND = false;
+                                }
+                            }
+                        }
+                    }
+                    if (isCostND) {
+                        ND.add(node);
                     }
                 }
             }
 
-            // Step 4: Identify solutions
-
-            for (String node : nonDominated) {
-                boolean isParetoOptimal = true;
-                for (String other : nonDominated) {
-                    if (!node.equals(other) && dominates(other, node)) {
-                        isParetoOptimal = false;
-                        break;
-                    }
-                }
-                if (isParetoOptimal) {
-                    solution.add(node);
-                }
+            if (ND.isEmpty()) {
+                break mainLoop;
             }
 
-            // Step 5: Expand the selected Node (alternative Nodes) and examine its successors
+            Node prescelto = heuristicFunction.apply(ND, label);
 
-            // Step 6: Iterate
+            open.remove(prescelto);
+            closed.add(prescelto);
+            if (endNodes.contains(prescelto)) {
+                solutionCosts.put(prescelto, label.get(prescelto));
+                continue;
+            }
+
+            for (Node child : Graphs.successorListOf(graph, prescelto)) {
+                Cost cost = graph.getEdge(prescelto, child).label();
+                Set<Cost> newCosts = label.get(prescelto).stream().map(c -> c.add(cost)).collect(Collectors.toSet());
+                if (label.putIfAbsent(child, new HashSet<>()) == null) {
+                    open.add(child);
+                }
+                for (Cost newCost : newCosts) {
+                    boolean nd = true;
+                    for (Cost otherCost : label.get(child)) {
+                        if (otherCost.isLessThan(newCost)) {
+                            nd = false;
+                        }
+                        if (newCost.isLessThan(otherCost)) {
+                            label.get(child).remove(otherCost);
+                            closed.remove(child);
+                            open.add(child);
+                        }
+                    }
+                    if (nd) {
+                        label.get(child).add(newCost);
+                    }
+                }
+            }
+            // System.out.println("esaminando " + prescelto + " label: " + label + " (closed=" + closed + ", open=" + open + ")");
         }
 
-        return new ArrayList<>(solution);
+        for (Node node : solutionCosts.keySet()) {
+            for (Cost cost : solutionCosts.get(node)) {
+                for (Node otherNode : solutionCosts.keySet()) {
+                    List<Cost> toRemove = new ArrayList<>();
+                    for (Cost otherCost : solutionCosts.get(otherNode)) {
+                        if (cost.isLessThan(otherCost)) {
+                            toRemove.add(otherCost);
+                        }
+                    }
+                    solutionCosts.get(otherNode).removeAll(toRemove);
+                }
+            }
+        }
+        List<Node> toRemove = new ArrayList<>();
+        for (Node node : solutionCosts.keySet()) {
+            if (solutionCosts.get(node).isEmpty()) toRemove.add(node);
+        }
+        for (Node remove : toRemove) {
+            solutionCosts.remove(remove);
+        }
+        return solutionCosts;
     }
 
 }
