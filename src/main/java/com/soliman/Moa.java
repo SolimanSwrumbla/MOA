@@ -8,24 +8,26 @@ import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 
 public class Moa {
 
-    public static <Node, Cost extends PartialOrder<Cost>> Map<Node, Set<Cost>> search(DefaultDirectedWeightedGraph<Node, LabeledEdge<Cost>> graph, Node startNode, Set<Node> endNodes, Cost zero, HeuristicFunction<Node, Cost> heuristicFunction) {
+    public static <Node, Cost extends PartialOrder<Cost>> Map<Node, Set<Path<Node, Cost>>> search(DefaultDirectedWeightedGraph<Node, LabeledEdge<Cost>> graph, Node startNode, Set<Node> endNodes, Cost zero, HeuristicFunction<Node, Cost> heuristicFunction) {
         Set<Node> open = new HashSet<>();
         Set<Node> closed = new HashSet<>();
-        Map<Node, Set<Cost>> solutionCosts = new HashMap<>();
-        Map<Node, Set<Cost>> label = new HashMap<>();
+        Map<Node, Set<Path<Node, Cost>>> solutionCosts = new HashMap<>();
+        Map<Node, Set<Path<Node, Cost>>> label = new HashMap<>();
 
         open.add(startNode);
-        label.put(startNode, Set.of(zero));
+        label.put(startNode, Set.of(new Path<>(startNode, null, zero)));
         
         mainLoop:
         while (!open.isEmpty()) {
             Set<Node> ND = new HashSet<>();
-            for (Node node:open) {
-                for (Cost cost:label.get(node)) {
+            for (Node node : open) {
+                for (var path : label.get(node)) {
+                    Cost cost = path.cost();
                     boolean isCostND = true;
                     for (Node otherNode:solutionCosts.keySet()) {
                         if (node != otherNode) {
-                            for (Cost otherCost:solutionCosts.get(otherNode)){
+                            for (var otherPath : solutionCosts.get(otherNode)) {
+                                Cost otherCost = otherPath.cost();
                                 if (otherCost.isLessThan(cost)){
                                     isCostND = false;
                                 }
@@ -34,8 +36,9 @@ public class Moa {
                     }
                     for (Node otherNode:open) {
                         if (node != otherNode) {
-                            for (Cost otherCost:label.get(otherNode)){
-                                if (otherCost.isLessThan(cost)){
+                            for (var otherPath : label.get(otherNode)) {
+                                Cost otherCost = otherPath.cost();
+                                if (otherCost.isLessThan(cost)) {
                                     isCostND = false;
                                 }
                             }
@@ -59,46 +62,53 @@ public class Moa {
                 solutionCosts.put(prescelto, label.get(prescelto));
                 continue;
             }
-
             for (Node child : Graphs.successorListOf(graph, prescelto)) {
                 Cost cost = graph.getEdge(prescelto, child).label();
-                Set<Cost> newCosts = label.get(prescelto).stream().map(c -> c.add(cost)).collect(Collectors.toSet());
+                Set<Path<Node, Cost>> newPaths = label.get(prescelto).stream().map(p -> new Path<>(child, p, p.cost().add(cost))).collect(Collectors.toSet());
                 if (label.putIfAbsent(child, new HashSet<>()) == null) {
                     open.add(child);
                 }
-                for (Cost newCost : newCosts) {
+                for (var newPath : newPaths) {
+                    Cost newCost = newPath.cost();
                     boolean nd = true;
-                    for (Cost otherCost : label.get(child)) {
+                    for (var otherPath : label.get(child)) {
+                        Cost otherCost = otherPath.cost();
                         if (otherCost.isLessThan(newCost)) {
                             nd = false;
                         }
                         if (newCost.isLessThan(otherCost)) {
-                            label.get(child).remove(otherCost);
+                            List<Path<Node, Cost>> toRemove = new ArrayList<>();
+                            toRemove.addAll(label.get(child).stream().filter(p -> p.cost().equals(otherCost)).toList());
+                            for (var remove : toRemove) {
+                                label.get(child).remove(remove);
+                            }
                             closed.remove(child);
                             open.add(child);
                         }
                     }
                     if (nd) {
-                        label.get(child).add(newCost);
+                        label.get(child).add(newPath);
                     }
                 }
             }
-            // System.out.println("esaminando " + prescelto + " label: " + label + " (closed=" + closed + ", open=" + open + ")");
         }
 
         for (Node node : solutionCosts.keySet()) {
-            for (Cost cost : solutionCosts.get(node)) {
+            for (var path : solutionCosts.get(node)) {
+                Cost cost = path.cost();
                 for (Node otherNode : solutionCosts.keySet()) {
-                    List<Cost> toRemove = new ArrayList<>();
-                    for (Cost otherCost : solutionCosts.get(otherNode)) {
+                    List<Path<Node, Cost>> toRemove = new ArrayList<>();
+                    for (var otherPath : solutionCosts.get(otherNode)) {
+                        Cost otherCost = otherPath.cost();
                         if (cost.isLessThan(otherCost)) {
-                            toRemove.add(otherCost);
+                            toRemove.add(otherPath);
                         }
                     }
                     solutionCosts.get(otherNode).removeAll(toRemove);
                 }
             }
         }
+
         List<Node> toRemove = new ArrayList<>();
         for (Node node : solutionCosts.keySet()) {
             if (solutionCosts.get(node).isEmpty()) toRemove.add(node);
@@ -108,5 +118,4 @@ public class Moa {
         }
         return solutionCosts;
     }
-
 }
