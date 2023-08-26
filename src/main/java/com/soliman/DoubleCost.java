@@ -42,6 +42,6 @@ public class DoubleCost implements PartialOrder<DoubleCost> {
 
     @Override
     public String toString() {
-        return String.format("(%d, %d)", cost1, cost2);
+        return String.format("(%d %d)", cost1, cost2);
     }
 }
