@@ -71,20 +71,20 @@ public class Moa {
                 for (var newPath : newPaths) {
                     Cost newCost = newPath.cost();
                     boolean nd = true;
+                    List<Path<Node, Cost>> toRemove = new ArrayList<>();
                     for (var otherPath : label.get(child)) {
                         Cost otherCost = otherPath.cost();
                         if (otherCost.isLessThan(newCost)) {
                             nd = false;
                         }
                         if (newCost.isLessThan(otherCost)) {
-                            List<Path<Node, Cost>> toRemove = new ArrayList<>();
                             toRemove.addAll(label.get(child).stream().filter(p -> p.cost().equals(otherCost)).toList());
-                            for (var remove : toRemove) {
-                                label.get(child).remove(remove);
-                            }
                             closed.remove(child);
                             open.add(child);
                         }
+                    }
+                    for (var remove : toRemove) {
+                        label.get(child).remove(remove);
                     }
                     if (nd) {
                         label.get(child).add(newPath);

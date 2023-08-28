@@ -1,11 +1,12 @@
 package com.soliman;
 
+import java.util.Locale;
 import java.util.Objects;
 
 public class DoubleCost implements PartialOrder<DoubleCost> {
-    private final int cost1;
-    private final int cost2;
-    public DoubleCost(int cost1, int cost2){
+    private final double cost1;
+    private final double cost2;
+    public DoubleCost(double cost1, double cost2){
         this.cost1 = cost1;
         this.cost2 = cost2;	
     }
@@ -25,7 +26,7 @@ public class DoubleCost implements PartialOrder<DoubleCost> {
         return new DoubleCost(this.cost1 + other.cost1, this.cost2 + other.cost2);
     }
 
-    public int sum() {
+    public double sum() {
         return cost1 + cost2;
     }
 
@@ -42,6 +43,6 @@ public class DoubleCost implements PartialOrder<DoubleCost> {
 
     @Override
     public String toString() {
-        return String.format("(%d %d)", cost1, cost2);
+        return String.format(Locale.US, "(%.2fKm %.2fh)", cost1, cost2);
     }
 }

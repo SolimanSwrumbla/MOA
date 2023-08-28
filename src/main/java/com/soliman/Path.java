@@ -7,6 +7,6 @@ public record Path<Node, Cost extends PartialOrder<Cost>>(Node actual, Path<Node
     }
     
     public String toString(String name) {
-        return name + " = {" + pathToString() + "}" + "   c" + "(" + name + ") = " + cost;
+        return name + " = {" + pathToString() + "}" + "       c" + "(" + name + ") = " + cost;
     }
 }
