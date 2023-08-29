@@ -1,11 +1,11 @@
 Nodo iniziale: Torino
 Nodi finali: Aosta
-Direzionale: S
+Direzionale (S/N): S
 
-Torino - (90 1.0) - Alessandria
+Torino - (90 12) - Alessandria
 Torino - (50 0.5) - Asti
 Torino - (120 1.2) - Biella
-Torino - (100 1.1) - Cuneo
+Torino - (10 1.1) - Cuneo
 Torino - (80 0.8) - Novara
 Torino - (70 0.7) - Vercelli
 Alessandria - (60 0.6) - Asti
