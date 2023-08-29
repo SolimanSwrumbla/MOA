@@ -10,15 +10,16 @@ import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 public class App {
     public static void main(String[] args) {
 
-        DefaultDirectedWeightedGraph<String, LabeledEdge<DoubleCost>> graph = new DefaultDirectedWeightedGraph<>(LabeledEdge.class);
+        DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph = new DefaultDirectedWeightedGraph<>(LabeledEdge.class);
 
         String startNode = "";
         Set<String> endNodes = new HashSet<>();
         boolean directional = true;
+        Integer costLength = null;
 
         try (BufferedReader reader = new BufferedReader(new FileReader("input.txt"))) {
-            startNode = reader.readLine().replace(":", ": ").split(":")[1].trim().toUpperCase(Locale.ROOT);
-            String endNodesString = reader.readLine().replace(":", ": ").split(":")[1].trim().toUpperCase(Locale.ROOT);
+            startNode = reader.readLine().replace(":", ": ").split(":")[1].trim().toUpperCase();
+            String endNodesString = reader.readLine().replace(":", ": ").split(":")[1].trim().toUpperCase();
             if (startNode.isEmpty() && endNodesString.isEmpty()) {
                 System.err.println("\nErrore: Nessun nodo iniziale e finale.\n");
                 return;
@@ -31,7 +32,6 @@ public class App {
                 System.err.println("\nErrore: Nessun nodo finale.\n");
                 return;
             }
-            endNodesString = endNodesString.replace(",", ",");
             endNodes = new HashSet<>(Arrays.asList(endNodesString.split("\\s*,\\s*")));
             if (endNodes.contains(startNode)) {
                 System.err.println("\nErrore: Il nodo iniziale non puo' essere un nodo finale.\n");
@@ -54,36 +54,32 @@ public class App {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.isBlank()) continue;
-                String[] parts = line.replace(" - ", "-").replace(" -", "-").replace("- ", "-").split("-");
+                String[] parts = line.split("\\s*-\\s*");
                 if (parts.length != 3) {
                     System.err.println("\nErrore: Formato della linea invalido : " + line);
                     continue;
                 }
                 String source = parts[0].toUpperCase(Locale.ROOT);
-                if (!source.matches("^[a-zA-Z0-9]+$")){
+                if (source.matches(".*[,-].*")){
                     System.err.println("\nErrore: Formato nodo invalido : " + line);
                 }
-                String[] costs = parts[1].replace(",", " ").replaceAll("\\s+", " ").replace("(", "").replace(")", "").split(" ");
-                if (costs.length != 2) {
-                    System.err.println("\nErrore: Formato del costo invalido : " + line);
-                    continue;
+                String[] costs = parts[1].replace(",", ".").replaceAll("\\s+", " ").replace("(", "").replace(")", "").split(" ");
+                if (costLength != null && costs.length != costLength) {
+                    System.err.println("\nErrore: Formato del costo invalido : " + line + "\n");
+                    return;
                 }
+                costLength = costs.length;
                 try {
-                    double cost1 = Double.parseDouble(costs[0]);
-                    double cost2 = Double.parseDouble(costs[1]);
+                    double[] convertedCosts = Arrays.stream(costs).mapToDouble(Double::parseDouble).toArray();
                     String target = parts[2].toUpperCase(Locale.ROOT);
-                    if (!target.matches("^[a-zA-Z0-9]+$")){
+                    if (target.matches(".*[,-].*")){
                         System.err.println("\nErrore: Formato nodo invalido : " + line);
                     }
                     graph.addVertex(source);
                     graph.addVertex(target);
-                    graph.addEdge(source, target, new LabeledEdge<>(new DoubleCost(cost1, cost2)));
+                    graph.addEdge(source, target, new LabeledEdge<>(new Costs(convertedCosts)));
                     if (!directional) {
-                        graph.addEdge(target, source, new LabeledEdge<>(new DoubleCost(cost1, cost2)));
-                    }
-                    if (!graph.containsVertex(startNode)) {
-                        System.err.println("\nErrore: Il nodo iniziale non e' presente nel grafo.\n");
-                        return;
+                        graph.addEdge(target, source, new LabeledEdge<>(new Costs(convertedCosts)));
                     }
                 } catch (NumberFormatException e) {
                     System.err.println("\nErrore: Formato del costo invalido : " + line);
@@ -93,7 +89,12 @@ public class App {
             e.printStackTrace();
         }
 
-        var solutionPath = Moa.search(graph, startNode, endNodes, new DoubleCost(0, 0), App::heuristicFunction);
+        if (!graph.containsVertex(startNode)) {
+            System.err.println("\nErrore: Il nodo iniziale non e' presente nel grafo.\n");
+            return;
+        }
+
+        var solutionPath = Moa.search(graph, startNode, endNodes, new Costs(new double[costLength]), App::heuristicFunction);
         System.out.println();
         int i = 1;
         for (var endNode : solutionPath.keySet()) {
@@ -105,13 +106,13 @@ public class App {
         System.out.println();
     }
 
-    public static String heuristicFunction(Set<String> ND, Map<String, Set<Path<String, DoubleCost>>> label) {
+    public static String heuristicFunction(Set<String> ND, Map<String, Set<Path<String, Costs>>> label) {
         String minNode = null;
         double minCost = Double.POSITIVE_INFINITY;
         for (String node : ND) {
             double actualMin = Integer.MAX_VALUE;
             for (var path : label.get(node)) {
-                DoubleCost cost = path.cost();
+                Costs cost = path.cost();
                 if (cost.sum() < actualMin) actualMin = cost.sum();
             }
             if (minNode == null || actualMin < minCost) {

@@ -16,7 +16,7 @@ public class Moa {
 
         open.add(startNode);
         label.put(startNode, Set.of(new Path<>(startNode, null, zero)));
-        
+
         mainLoop:
         while (!open.isEmpty()) {
             Set<Node> ND = new HashSet<>();
@@ -24,17 +24,17 @@ public class Moa {
                 for (var path : label.get(node)) {
                     Cost cost = path.cost();
                     boolean isCostND = true;
-                    for (Node otherNode:solutionCosts.keySet()) {
+                    for (Node otherNode : solutionCosts.keySet()) {
                         if (node != otherNode) {
                             for (var otherPath : solutionCosts.get(otherNode)) {
                                 Cost otherCost = otherPath.cost();
-                                if (otherCost.isLessThan(cost)){
+                                if (otherCost.isLessThan(cost)) {
                                     isCostND = false;
                                 }
                             }
                         }
                     }
-                    for (Node otherNode:open) {
+                    for (Node otherNode : open) {
                         if (node != otherNode) {
                             for (var otherPath : label.get(otherNode)) {
                                 Cost otherCost = otherPath.cost();
