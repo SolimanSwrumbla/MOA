@@ -59,7 +59,7 @@ public class App {
                     System.err.println("\nErrore: Formato della linea invalido : " + line);
                     continue;
                 }
-                String source = parts[0].toUpperCase(Locale.ROOT);
+                String source = parts[0].toUpperCase();
                 if (source.matches(".*[,-].*")){
                     System.err.println("\nErrore: Formato nodo invalido : " + line);
                 }
@@ -71,7 +71,7 @@ public class App {
                 costLength = costs.length;
                 try {
                     double[] convertedCosts = Arrays.stream(costs).mapToDouble(Double::parseDouble).toArray();
-                    String target = parts[2].toUpperCase(Locale.ROOT);
+                    String target = parts[2].toUpperCase();
                     if (target.matches(".*[,-].*")){
                         System.err.println("\nErrore: Formato nodo invalido : " + line);
                     }
