@@ -12,9 +12,7 @@ import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 public class ExplainationLogger implements Logger<String> {
 
     @Override
-    public void log(Set<String> open, Set<String> ND, Set<String> closed, Map<String, Set<Path<String>>> solutionCosts,
-            Map<String, Set<Path<String>>> label, DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph,
-            int k, String prescelto, Set<String> endNodes, Map<String, Set<Path<String>>> paths) {
+    public void log(int k, Set<String> open, Map<String, Set<Path<String>>> paths, DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph, Set<String> endNodes, String prescelto, Set<String> ND, Set<String> closed, Map<String, Set<Path<String>>> solutionCosts) {
 
         int i = 0;
         
@@ -23,7 +21,7 @@ public class ExplainationLogger implements Logger<String> {
                 System.out.format("%3d", k);
             else
                 System.out.format("   ");
-            var NewG = String.join("", label.get(node).stream().map(p -> p.cost().toString()).toList());
+            var NewG = String.join("", paths.get(node).stream().map(p -> p.cost().toString()).toList());
             var NewF = String.join("", Moa.selectionFunction(graph, node, paths, endNodes).stream().map(p -> p.cost().toString()).collect(Collectors.toSet()));
             if(node.equals(prescelto))
                 System.out.format(" | %4s** %40s %40s", node, NewG, NewF);

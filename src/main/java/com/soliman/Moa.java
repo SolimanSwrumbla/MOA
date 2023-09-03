@@ -40,12 +40,12 @@ public class Moa {
             var notDominated = getNotDominated(open, paths, solutionCosts, graph, endNodes);
             
             if (notDominated.isEmpty()) {
-                logger.log(open, notDominated, closed, solutionCosts, paths, graph, i, null, endNodes, paths);
+                logger.log(i, open, paths, graph, endNodes, null, notDominated, closed, solutionCosts);
                 break;
             }
 
             Node currentNode = notDominated.stream().min(Comparator.comparingDouble(h::get)).get();
-            logger.log(open, notDominated, closed, solutionCosts, paths, graph, i, currentNode, endNodes, paths);
+            logger.log(i, open, paths, graph, endNodes, currentNode, notDominated, closed, solutionCosts);
             open.remove(currentNode);
             closed.add(currentNode);
 
