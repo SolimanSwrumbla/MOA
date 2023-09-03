@@ -5,16 +5,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 
 public class App {
     public static void main(String[] args) {
 
-        DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph = new DefaultDirectedWeightedGraph<>(LabeledEdge.class);
+        DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph = new DefaultDirectedWeightedGraph<>(
+                LabeledEdge.class);
 
         String startNode = "";
         Set<String> endNodes = new HashSet<>();
         boolean directional = true;
+        Logger<String> logger = Logger.noLogger();
         Integer costLength = null;
 
         try (BufferedReader reader = new BufferedReader(new FileReader("input.txt"))) {
@@ -33,11 +36,7 @@ public class App {
                 return;
             }
             endNodes = new HashSet<>(Arrays.asList(endNodesString.split("\\s*,\\s*")));
-            if (endNodes.contains(startNode)) {
-                System.err.println("\nErrore: Il nodo iniziale non puo' essere un nodo finale.\n");
-                return;
-            }
-        
+
             String direct = reader.readLine().replace(":", ": ").split(":")[1].trim();
             if (direct.isBlank()) {
                 System.out.println("\nErrore: Opzione direzionale vuota. (Default S).\n");
@@ -46,24 +45,32 @@ public class App {
             } else {
                 directional = direct.equalsIgnoreCase("S");
             }
-            if (startNode.contains(",")) {
-                System.err.println("\nErrore: Troppi nodi iniziali.\n");
-                return;
+
+            String explaination = reader.readLine().replace(":", ": ").split(":")[1].trim();
+            if (direct.isBlank()) {
+                System.out.println("\nErrore: Opzione spiegazione vuota. (Default N).\n");
+            } else if (!direct.equalsIgnoreCase("S") && !direct.equalsIgnoreCase("N")) {
+                System.err.println("\nErrore: Opzione spiegazione non valida. Utilizzare 'S' o 'N'. (Default N).");
+            } else {
+                logger = explaination.equalsIgnoreCase("S") ? new ExplainationLogger() : Logger.noLogger();
             }
 
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) continue;
-                String[] parts = line.split("\\s*-\\s*");
+                if (line.isBlank())
+                    continue;
+                String[] parts = line.split("\\s*\\|\\s*");
                 if (parts.length != 3) {
+                    System.out.println(parts.length);
                     System.err.println("\nErrore: Formato della linea invalido : " + line);
                     continue;
                 }
                 String source = parts[0].toUpperCase();
-                if (source.matches(".*[,-].*")){
+                if (source.matches(".*[,].*")) {
                     System.err.println("\nErrore: Formato nodo invalido : " + line);
                 }
-                String[] costs = parts[1].replace(",", ".").replaceAll("\\s+", " ").replace("(", "").replace(")", "").split(" ");
+                String[] costs = parts[1].replace(",", ".").replaceAll("\\s+", " ").replace("(", "").replace(")", "")
+                        .split(" ");
                 if (costLength != null && costs.length != costLength) {
                     System.err.println("\nErrore: Formato del costo invalido : " + line + "\n");
                     return;
@@ -72,9 +79,10 @@ public class App {
                 try {
                     double[] convertedCosts = Arrays.stream(costs).mapToDouble(Double::parseDouble).toArray();
                     String target = parts[2].toUpperCase();
-                    if (target.matches(".*[,-].*")){
+                    if (target.matches(".*[,].*")) {
                         System.err.println("\nErrore: Formato nodo invalido : " + line);
                     }
+                    if (source.equals(target)) continue;
                     graph.addVertex(source);
                     graph.addVertex(target);
                     graph.addEdge(source, target, new LabeledEdge<>(new Costs(convertedCosts)));
@@ -94,8 +102,21 @@ public class App {
             return;
         }
 
-        var solutionPath = Moa.search(graph, startNode, endNodes, new Costs(new double[costLength]), App::heuristicFunction);
-        System.out.println();
+        if(logger instanceof ExplainationLogger){
+        System.out.println("\n-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("                                             OPEN");
+        System.out.println("----------------------------------------------------------------------------------------------                                                                                           SOL_COSTS");
+        System.out.println("  k       n                                 New G(n)                                 New F(n)                                  CLOSED                                                    and GOALS");
+        System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        }
+        else System.out.println();
+        
+        var solutionPath = Moa.search(graph, startNode, endNodes, new Costs(new double[costLength]), App::heuristicFunction, logger);
+
+        if(logger instanceof ExplainationLogger){
+        System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        }
+
         int i = 1;
         for (var endNode : solutionPath.keySet()) {
             for (var path : solutionPath.get(endNode)) {
@@ -106,20 +127,18 @@ public class App {
         System.out.println();
     }
 
-    public static String heuristicFunction(Set<String> ND, Map<String, Set<Path<String, Costs>>> label) {
-        String minNode = null;
+    public static double heuristicFunction(DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph, String node, Set<String> endNodes, Map<String, Set<Path<String>>> paths) {
+        if (endNodes.contains(node)) {
+            return paths.get(node).stream().mapToDouble(p -> p.cost().sum()).min().orElseThrow();
+        }
         double minCost = Double.POSITIVE_INFINITY;
-        for (String node : ND) {
-            double actualMin = Integer.MAX_VALUE;
-            for (var path : label.get(node)) {
-                Costs cost = path.cost();
-                if (cost.sum() < actualMin) actualMin = cost.sum();
-            }
-            if (minNode == null || actualMin < minCost) {
-                minCost = actualMin;
-                minNode = node;
+        for (var child : Graphs.successorListOf(graph, node)) {
+            Costs cost = graph.getEdge(node, child).label();
+            for (var path : paths.get(node)) {
+                double value = path.cost().sum() + cost.sum();
+                if (value < minCost) minCost = value;
             }
         }
-        return minNode;
+        return minCost;
     }
 }

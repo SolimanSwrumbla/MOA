@@ -4,16 +4,16 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 
-public class Costs implements PartialOrder<Costs> {
+public class Costs {
     private final double[] costs;
 
     public Costs(double... costs) {
         this.costs = costs.clone();
     }
 
-    @Override
     public boolean isGreaterOrEqualThan(Costs other) {
-        if (costs.length!=other.costs.length) return false;
+        if (costs.length != other.costs.length)
+            return false;
         for (int i = 0; i < costs.length; i++) {
             if (costs[i] < other.costs[i]) {
                 return false;
@@ -22,9 +22,13 @@ public class Costs implements PartialOrder<Costs> {
         return true;
     }
 
-    @Override
+    public boolean isGreaterThan(Costs other) {
+        return isGreaterOrEqualThan(other) && !equals(other);
+    }
+
     public boolean isLessOrEqualThan(Costs other) {
-        if (costs.length != other.costs.length) return false;
+        if (costs.length != other.costs.length)
+            return false;
         for (int i = 0; i < costs.length; i++) {
             if (costs[i] > other.costs[i]) {
                 return false;
@@ -33,10 +37,14 @@ public class Costs implements PartialOrder<Costs> {
         return true;
     }
 
-    @Override
+    public boolean isLessThan(Costs other) {
+        return isLessOrEqualThan(other) && !equals(other);
+    }
+
     public Costs add(Costs other) {
         if (costs.length != other.costs.length) {
-            throw new IllegalArgumentException("Impossibile sommare costi di lunghezza differente" + " " + this + " " + other);
+            throw new IllegalArgumentException(
+                    "Impossibile sommare costi di lunghezza differente" + " " + this + " " + other);
         }
         double[] newCosts = new double[costs.length];
         for (int i = 0; i < costs.length; i++) {
@@ -55,7 +63,8 @@ public class Costs implements PartialOrder<Costs> {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Costs other)) return false;
+        if (!(obj instanceof Costs other))
+            return false;
         return Arrays.equals(costs, other.costs);
     }
 

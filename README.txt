@@ -9,50 +9,55 @@ Funzionamento:
 Input: Il programma legge i dati di input da un file di testo chiamato "input.txt".
 Questo file contiene le informazioni sul grafo e sui nodi di partenza e arrivo.
 Il file input.txt contiene le seguenti informazioni:
-Nodo Iniziale: Indica da quale nodo iniziare il percorso.
-Nodi Finali: Indica quali nodi si desidera raggiungere.
-Opzione Direzionale: Specifica se gli archi del grafo sono direzionati (S per sì, N per no).
-Archi e Costi: Ogni riga successiva rappresenta un arco nel formato NODO_SORGENTE - (COSTO1 COSTO2) - NODO_DESTINAZIONE.
+Nodo iniziale: Indica da quale nodo iniziare il percorso.
+Nodi finali: Indica quali nodi si desidera raggiungere.
+Direzionale: Specifica se gli archi del grafo sono direzionati (S per sì, N per no).
+Spiegazione: Specifica se si desidera la stampa della spiegazione (S per sì, N per no).
+Archi e Costi: Ogni riga successiva rappresenta un arco nel formato NODO_SORGENTE | (COSTO1 COSTO2) | NODO_DESTINAZIONE.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Utilizzo:
 
 Modificare il file input.txt seguendo le istruzioni sottostanti.
-Eseguire il programma App.java.
+Eseguire il programma App.java. --> "mvn exec:java -q"
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Formato del File input.txt:
 
-Nodo Iniziale: START
-Nodi Finali: END1, END2, ...
-Opzione Direzionale: S o N
+Nodo iniziale: START
+Nodi finali: END1, END2, ...
+Direzionale (S/N): S
+Spiegazione (S/N): N
 
-NODO_SORGENTE - COSTO1 COSTO2 - NODO_DESTINAZIONE
+NODO_SORGENTE | (COSTO1 COSTO2) | NODO_DESTINAZIONE
 ...
 
 Sostituire START con il nome del nodo iniziale.
 Sostituire END1, END2, ... con una lista separata da virgole dei nodi finali.
-Sostituire S o N per specificare se gli archi sono direzionati.
-Inserire gli archi e i costi nel formato NODO_SORGENTE - (COSTO1 COSTO2) - NODO_DESTINAZIONE per definire la struttura del grafo.
+Sostituire S o N nel terzo campo per specificare se gli archi sono direzionati (Default S).
+Sostituire S o N nel quarto campo per specificare se si desidera la stampa della spiegazione (Default N).
+Inserire gli archi e i costi nel formato NODO_SORGENTE | (COSTO1 COSTO2) | NODO_DESTINAZIONE per definire la struttura del grafo.
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Esempio di File input.txt:
 
 Nodo Iniziale: A
 Nodi Finali: D, E
-Opzione Direzionale: N
+Direzionale (S/N): S
+Spiegazione (S/N): N
 
-A - (2.5 3.0) - B
-B - (1.0 2.0) - C
-B - (2.0 2.5) - D
-C - (1.5 2.0) - D
-C - (2.0 1.5) - E
+A | (2.5 3.0) | B
+B | (1.0 2.0) | C
+B | (2.0 2.5) | D
+C | (1.5 2.0) | D
+C | (2.0 1.5) | E
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Note Importanti:
 
-I costi sono separati da uno spazio e devono essere numeri decimali positivi (Attualmente solo 2 per ogni arco).
+I costi possono essere uno o piú (ogni arco deve avere lo stesso numero di nodi), devono essere separati da uno spazio e devono essere numeri decimali positivi.
 Ogni arco può avere un solo nodo sorgente e un solo nodo destinazione.
 Assicurarsi che i nodi iniziali e finali siano presenti negli archi e siano scritti correttamente.
 È possibile aggiungere nuove linee per gli archi.
-Non è possibile modificare la posizione delle prime tre righe.
+Non è possibile modificare la posizione delle prime quattro righe.
+Non richiedere la spiegazione in caso di grafi complessi.

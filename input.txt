@@ -1,36 +1,23 @@
-Nodo iniziale: Torino
-Nodi finali: Aosta
+Nodo iniziale: s
+Nodi finali: y1, y2, y3
 Direzionale (S/N): S
+Spiegazione (S/N): S
 
-Torino - (90 72 12) - Alessandria
-Torino - (50 12 30) - Asti
-Torino - (120 12 72) - Biella
-Torino - (10 12 66) - Cuneo
-Torino - (80 12 48) - Novara
-Torino - (70 12 42) - Vercelli
-Alessandria - (60 12 36) - Asti
-Alessandria - (80 12 54) - Biella
-Alessandria - (120 12 78) - Cuneo
-Alessandria - (70 12 42) - Novara
-Alessandria - (100 21 60) - Vercelli
-Asti - (50 12 30) - Biella
-Asti - (110 12 66) - Cuneo
-Asti - (90 12 54) - Novara
-Asti - (80 12 48) - Vercelli
-Biella - (100 12 60) - Cuneo
-Biella - (130 12 84) - Novara
-Biella - (90 12 60) - Vercelli
-Cuneo - (70 12 42) - Novara
-Cuneo - (110 12 66) - Vercelli
-Novara - (50 12 30) - Vercelli
-Novara - (80 12 48) - Verbania
-Verbania - (90 12 54) - Domodossola
-Domodossola - (70 12 42) - Cuneo
-Domodossola - (120 12 72) - Biella
-Domodossola - (100 12 60) - Vercelli
-Vercelli - (70 12 42) - Ivrea
-Vercelli - (100 12 66) - Biella
-Ivrea - (50 12 36) - Aosta
-Ivrea - (80 12 42) - Cuneo
-Aosta - (100 12 54) - Biella
-Aosta - (70 12 42) - Domodossola
+s | (1 2) | 1
+s | (3 1) | 2
+s | (1 3) | 3
+1 | (2 1) | 4
+1 | (1 2) | 5
+2 | (2 1) | 5
+2 | (2 1) | 6
+3 | (1 2) | 6
+4 | (5 7) | 7
+5 | (1 3) | 7
+5 | (1 1) | 8
+6 | (5 2) | 8
+6 | (2 4) | 9
+7 | (1 4) | y1
+7 | (8 7) | y2
+8 | (5 7) | y2
+8 | (3 2) | y3
+9 | (1 2) | y3
