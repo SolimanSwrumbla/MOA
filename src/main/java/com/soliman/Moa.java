@@ -24,7 +24,9 @@ public class Moa {
         return false;
     }
 
-    public static <Node> Map<Node, Set<Path<Node>>> search(DefaultDirectedWeightedGraph<Node, LabeledEdge<Costs>> graph, Node startNode, Set<Node> endNodes, Costs zero, HeuristicFunction<Node> heuristicFunction, Logger<Node> logger) {
+    public static <Node> Map<Node, Set<Path<Node>>> search(DefaultDirectedWeightedGraph<Node, LabeledEdge<Costs>> graph,
+            Node startNode, Set<Node> endNodes, Costs zero, HeuristicFunction<Node> heuristicFunction,
+            Logger<Node> logger) {
         Set<Node> open = new HashSet<>();
         Set<Node> closed = new HashSet<>();
         Map<Node, Set<Path<Node>>> paths = new HashMap<>();
@@ -38,7 +40,7 @@ public class Moa {
 
         for (int i = 0; !open.isEmpty(); i++) {
             var notDominated = getNotDominated(open, paths, solutionCosts, graph, endNodes);
-            
+
             if (notDominated.isEmpty()) {
                 logger.log(i, open, paths, graph, endNodes, null, notDominated, closed, solutionCosts);
                 break;
@@ -87,7 +89,8 @@ public class Moa {
 
         List<Node> toRemove = new ArrayList<>(); // velocizzabile?
         for (Node node : solutionCosts.keySet()) {
-            if (solutionCosts.get(node).isEmpty()) toRemove.add(node);
+            if (solutionCosts.get(node).isEmpty())
+                toRemove.add(node);
         }
         for (Node remove : toRemove) {
             solutionCosts.remove(remove);
@@ -95,7 +98,8 @@ public class Moa {
         return solutionCosts;
     }
 
-    public static <Node> Set<Path<Node>> selectionFunction(DefaultDirectedWeightedGraph<Node, LabeledEdge<Costs>> graph, Node node, Map<Node, Set<Path<Node>>> paths, Set<Node> endNodes) {
+    public static <Node> Set<Path<Node>> selectionFunction(DefaultDirectedWeightedGraph<Node, LabeledEdge<Costs>> graph,
+            Node node, Map<Node, Set<Path<Node>>> paths, Set<Node> endNodes) {
         if (endNodes.contains(node)) {
             return paths.get(node);
         }
@@ -108,9 +112,11 @@ public class Moa {
         }
         removeDominated(result, result);
         return result;
-    } 
+    }
 
-    private static <Node> Set<Node> getNotDominated(Set<Node> open, Map<Node, Set<Path<Node>>> paths, Map<Node, Set<Path<Node>>> solutionCosts, DefaultDirectedWeightedGraph<Node, LabeledEdge<Costs>> graph, Set<Node> endNodes) {
+    private static <Node> Set<Node> getNotDominated(Set<Node> open, Map<Node, Set<Path<Node>>> paths,
+            Map<Node, Set<Path<Node>>> solutionCosts, DefaultDirectedWeightedGraph<Node, LabeledEdge<Costs>> graph,
+            Set<Node> endNodes) {
         Set<Node> result = new HashSet<>();
         for (Node node : open) {
             Set<Path<Node>> nodePaths = selectionFunction(graph, node, paths, endNodes);

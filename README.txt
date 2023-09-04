@@ -53,9 +53,24 @@ C | (1.5 2.0) | D
 C | (2.0 1.5) | E
 
 ------------------------------------------------------------------------------------------------------------------------------------
+Contenuto spiegazione:
+
+Nel caso in cui venga richiesta la stampa della spiegazione, verrà stampata una tabella che conterrà le seguenti colonne:
+
+k: Indica il numero dell'iterazione.
+n: Rappresenta l'insieme dei nodi in OPEN. I nodi contrassegnati con un asterisco (*) sono quelli che fanno parte dell'insieme ND
+   (non dominati), mentre il nodo contrassegnato con due asterischi (**) è il nodo scelto per l'espansione.
+New G(n): Questo insieme contiene i costi dei percorsi non dominati dal nodo iniziale al nodo n.
+New F(n): Rappresenta l'insieme dei valori di selezione del nodo n. Questi valori combinano i costi accumulati da G(n) e i valori
+euristici associati a n.
+SOL_COSTS: Contiene i costi dei percorsi di soluzione non dominati.
+GOALS: Rappresenta l'insieme dei nodi finali raggiunti.
+
+------------------------------------------------------------------------------------------------------------------------------------
 Note Importanti:
 
-I costi possono essere uno o piú (ogni arco deve avere lo stesso numero di nodi), devono essere separati da uno spazio e devono essere numeri decimali positivi.
+I costi possono essere uno o piú (ogni arco deve avere lo stesso numero di nodi),
+devono essereseparati da uno spazio e devonoessere numeri decimali positivi.
 Ogni arco può avere un solo nodo sorgente e un solo nodo destinazione.
 Assicurarsi che i nodi iniziali e finali siano presenti negli archi e siano scritti correttamente.
 È possibile aggiungere nuove linee per gli archi.

@@ -82,7 +82,8 @@ public class App {
                     if (target.matches(".*[,].*")) {
                         System.err.println("\nErrore: Formato nodo invalido : " + line);
                     }
-                    if (source.equals(target)) continue;
+                    if (source.equals(target))
+                        continue;
                     graph.addVertex(source);
                     graph.addVertex(target);
                     graph.addEdge(source, target, new LabeledEdge<>(new Costs(convertedCosts)));
@@ -102,19 +103,25 @@ public class App {
             return;
         }
 
-        if(logger instanceof ExplainationLogger){
-        System.out.println("\n-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println("                                             OPEN");
-        System.out.println("----------------------------------------------------------------------------------------------                                                                                           SOL_COSTS");
-        System.out.println("  k       n                                 New G(n)                                 New F(n)                                  CLOSED                                                    and GOALS");
-        System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-        }
-        else System.out.println();
-        
-        var solutionPath = Moa.search(graph, startNode, endNodes, new Costs(new double[costLength]), App::heuristicFunction, logger);
+        if (logger instanceof ExplainationLogger) {
+            System.out.println(
+                    "\n-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+            System.out.println("                                             OPEN");
+            System.out.println(
+                    "----------------------------------------------------------------------------------------------                                                                                           SOL_COSTS");
+            System.out.println(
+                    "  k       n                                 New G(n)                                 New F(n)                                  CLOSED                                                     e GOALS");
+            System.out.println(
+                    "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        } else
+            System.out.println();
 
-        if(logger instanceof ExplainationLogger){
-        System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        var solutionPath = Moa.search(graph, startNode, endNodes, new Costs(new double[costLength]),
+                App::heuristicFunction, logger);
+
+        if (logger instanceof ExplainationLogger) {
+            System.out.println(
+                    "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         }
 
         int i = 1;
@@ -127,7 +134,8 @@ public class App {
         System.out.println();
     }
 
-    public static double heuristicFunction(DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph, String node, Set<String> endNodes, Map<String, Set<Path<String>>> paths) {
+    public static double heuristicFunction(DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph, String node,
+            Set<String> endNodes, Map<String, Set<Path<String>>> paths) {
         if (endNodes.contains(node)) {
             return paths.get(node).stream().mapToDouble(p -> p.cost().sum()).min().orElseThrow();
         }
@@ -136,7 +144,8 @@ public class App {
             Costs cost = graph.getEdge(node, child).label();
             for (var path : paths.get(node)) {
                 double value = path.cost().sum() + cost.sum();
-                if (value < minCost) minCost = value;
+                if (value < minCost)
+                    minCost = value;
             }
         }
         return minCost;
