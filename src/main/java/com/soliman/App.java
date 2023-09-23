@@ -11,8 +11,7 @@ import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 public class App {
     public static void main(String[] args) {
 
-        DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph = new DefaultDirectedWeightedGraph<>(
-                LabeledEdge.class);
+        DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph = new DefaultDirectedWeightedGraph<>(null, null);
 
         String startNode = "";
         Set<String> endNodes = new HashSet<>();
@@ -20,9 +19,9 @@ public class App {
         Logger<String> logger = Logger.noLogger();
         Integer costLength = null;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("input.txt"))) {
-            startNode = reader.readLine().replace(":", ": ").split(":")[1].trim().toUpperCase();
-            String endNodesString = reader.readLine().replace(":", ": ").split(":")[1].trim().toUpperCase();
+        try (BufferedReader reader = new BufferedReader(new FileReader("settings.txt"))) {
+            startNode = reader.readLine().split(":")[1].trim().toUpperCase();
+            String endNodesString = reader.readLine().split(":")[1].trim().toUpperCase();
             if (startNode.isEmpty() && endNodesString.isEmpty()) {
                 System.err.println("\nErrore: Nessun nodo iniziale e finale.\n");
                 return;
@@ -37,7 +36,7 @@ public class App {
             }
             endNodes = new HashSet<>(Arrays.asList(endNodesString.split("\\s*,\\s*")));
 
-            String direct = reader.readLine().replace(":", ": ").split(":")[1].trim();
+            String direct = reader.readLine().split(":")[1].trim();
             if (direct.isBlank()) {
                 System.out.println("\nErrore: Opzione direzionale vuota. (Default S).\n");
             } else if (!direct.equalsIgnoreCase("S") && !direct.equalsIgnoreCase("N")) {
@@ -46,7 +45,7 @@ public class App {
                 directional = direct.equalsIgnoreCase("S");
             }
 
-            String explaination = reader.readLine().replace(":", ": ").split(":")[1].trim();
+            String explaination = reader.readLine().split(":")[1].trim();
             if (direct.isBlank()) {
                 System.out.println("\nErrore: Opzione spiegazione vuota. (Default N).\n");
             } else if (!direct.equalsIgnoreCase("S") && !direct.equalsIgnoreCase("N")) {
@@ -54,7 +53,11 @@ public class App {
             } else {
                 logger = explaination.equalsIgnoreCase("S") ? new ExplainationLogger() : Logger.noLogger();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
+        try (BufferedReader reader = new BufferedReader(new FileReader("input.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.isBlank())
