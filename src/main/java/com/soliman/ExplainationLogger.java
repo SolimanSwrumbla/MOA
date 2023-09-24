@@ -14,10 +14,13 @@ public class ExplainationLogger implements Logger<String> {
         int i = 0;
 
         for (var node : open) {
-            if (i == open.size() / 2)
+            if ((open.size() % 2 == 0 && i == open.size() / 2 - 1) || (open.size() % 2 != 0 && i == open.size() / 2)) {
                 System.out.format("%3d", k);
-            else
-                System.out.format("   ");
+            } else {
+                System.out.print("   ");
+            }
+            
+            
             var NewG = String.join("", paths.get(node).stream().map(p -> p.cost().toString()).toList());
             var NewF = String.join("", Moa.selectionFunction(node, paths, endNodes).stream()
                     .map(p -> p.cost().toString()).collect(Collectors.toSet()));

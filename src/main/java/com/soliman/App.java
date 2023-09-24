@@ -119,11 +119,11 @@ public class App {
         } else
             System.out.println();
 
-        // var solutionPath = Moa.search(new JGraphTNode(graph, startNode), n ->
-        // endNodes.contains(n.value()), new Costs(new double[costLength]),
-        // App::heuristicFunction, logger);
-        var solutionPath = Moa.search(new RandomNode(), n -> Integer.parseInt(n.value()) >= 95, new Costs(0, 0),
-                App::heuristicFunction, logger);
+        var solutionPath = Moa.search(new JGraphTNode(graph, startNode), n ->
+        endNodes.contains(n.value()), new Costs(new double[costLength]),
+        App::heuristicFunction, logger);
+        //var solutionPath = Moa.search(new RandomNode(), n -> Integer.parseInt(n.value()) >= 95, new Costs(0, 0),
+        //        App::heuristicFunction, logger);
 
         if (logger instanceof ExplainationLogger) {
             System.out.println(
