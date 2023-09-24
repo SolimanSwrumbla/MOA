@@ -33,6 +33,6 @@ public class ExplainationLogger implements Logger<String> {
             i++;
         }
         System.out.println();
-        
+
     }
 }

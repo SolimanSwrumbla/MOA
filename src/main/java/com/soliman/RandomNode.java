@@ -17,9 +17,10 @@ public class RandomNode implements Node<String> {
     @Override
     public Iterable<Child<String>> successors() {
         Random random = new Random(super.hashCode());
-        //(3) -> max numbers of child
-        int children = random.nextInt(3)+1; 
-        return IntStream.range(0, children).mapToObj(i -> new Child<>(new RandomNode(random.nextInt(100)), new Costs(random.nextDouble(), random.nextDouble()))).toList();
+        // (3) -> max numbers of child
+        int children = random.nextInt(3) + 1;
+        return IntStream.range(0, children).mapToObj(i -> new Child<>(new RandomNode(random.nextInt(100)),
+                new Costs(random.nextDouble(), random.nextDouble()))).toList();
     }
 
     @Override

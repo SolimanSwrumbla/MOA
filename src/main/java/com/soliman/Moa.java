@@ -95,7 +95,8 @@ public class Moa {
         return solutionCosts;
     }
 
-    public static <N> Set<Path<N>> selectionFunction(Node<N> node, Map<Node<N>, Set<Path<N>>> paths, Predicate<Node<N>> endNodes) {
+    public static <N> Set<Path<N>> selectionFunction(Node<N> node, Map<Node<N>, Set<Path<N>>> paths,
+            Predicate<Node<N>> endNodes) {
         if (endNodes.test(node)) {
             return paths.get(node);
         }
