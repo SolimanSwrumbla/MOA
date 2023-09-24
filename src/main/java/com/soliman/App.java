@@ -4,8 +4,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Predicate;
 
-import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 
 public class App {
@@ -34,8 +34,8 @@ public class App {
                 System.err.println("\nErrore: Nessun nodo finale.\n");
                 return;
             }
-            endNodes = new HashSet<>(Arrays.asList(endNodesString.split("\\s*,\\s*")));
-
+            endNodes.addAll(Arrays.asList(endNodesString.split("\\s*,\\s*")));
+            
             String direct = reader.readLine().split(":")[1].trim();
             if (direct.isBlank()) {
                 System.out.println("\nErrore: Opzione direzionale vuota. (Default S).\n");
@@ -119,7 +119,7 @@ public class App {
         } else
             System.out.println();
 
-        var solutionPath = Moa.search(graph, startNode, endNodes, new Costs(new double[costLength]),
+        var solutionPath = Moa.search(new JGraphTNode(graph, startNode), n -> endNodes.contains(n.value()), new Costs(new double[costLength]),
                 App::heuristicFunction, logger);
 
         if (logger instanceof ExplainationLogger) {
@@ -137,14 +137,13 @@ public class App {
         System.out.println();
     }
 
-    public static double heuristicFunction(DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph, String node,
-            Set<String> endNodes, Map<String, Set<Path<String>>> paths) {
-        if (endNodes.contains(node)) {
+    public static <T> double heuristicFunction(Node<T> node, Predicate <Node<T>> endNodes, Map<Node<T>, Set<Path<T>>> paths) {
+        if (endNodes.test(node)) {
             return paths.get(node).stream().mapToDouble(p -> p.cost().sum()).min().orElseThrow();
         }
         double minCost = Double.POSITIVE_INFINITY;
-        for (var child : Graphs.successorListOf(graph, node)) {
-            Costs cost = graph.getEdge(node, child).label();
+        for (var child : node.successors()) {
+            Costs cost = child.cost();
             for (var path : paths.get(node)) {
                 double value = path.cost().sum() + cost.sum();
                 if (value < minCost)

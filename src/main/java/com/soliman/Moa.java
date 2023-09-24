@@ -1,12 +1,10 @@
 package com.soliman;
 
 import java.util.*;
-
-import org.jgrapht.Graphs;
-import org.jgrapht.graph.DefaultDirectedWeightedGraph;
+import java.util.function.Predicate;
 
 public class Moa {
-    public static <Node> boolean isDominated(Path<Node> path, Set<Path<Node>> otherPaths) {
+    public static <N> boolean isDominated(Path<N> path, Set<Path<N>> otherPaths) {
         for (var otherPath : otherPaths) {
             if (otherPath.cost().isLessThan(path.cost())) {
                 return true;
@@ -15,7 +13,7 @@ public class Moa {
         return false;
     }
 
-    public static <Node> boolean isDominatedOrEqual(Path<Node> path, Set<Path<Node>> otherPaths) {
+    public static <N> boolean isDominatedOrEqual(Path<N> path, Set<Path<N>> otherPaths) {
         for (var otherPath : otherPaths) {
             if (path.equals(otherPath) || otherPath.cost().isLessThan(path.cost())) {
                 return true;
@@ -24,108 +22,105 @@ public class Moa {
         return false;
     }
 
-    public static <Node> Map<Node, Set<Path<Node>>> search(DefaultDirectedWeightedGraph<Node, LabeledEdge<Costs>> graph,
-            Node startNode, Set<Node> endNodes, Costs zero, HeuristicFunction<Node> heuristicFunction,
-            Logger<Node> logger) {
-        Set<Node> open = new HashSet<>();
-        Set<Node> closed = new HashSet<>();
-        Map<Node, Set<Path<Node>>> paths = new HashMap<>();
-        Map<Node, Double> h = new HashMap<>();
-        Map<Node, Set<Path<Node>>> solutionCosts = new HashMap<>();
+    public static <N> Map<Node<N>, Set<Path<N>>> search(Node<N> startNode, Predicate<Node<N>> endNodes, Costs zero,
+            HeuristicFunction<N> heuristicFunction, Logger<N> logger) {
+        Set<Node<N>> open = new HashSet<>();
+        Set<Node<N>> closed = new HashSet<>();
+        Map<Node<N>, Set<Path<N>>> paths = new HashMap<>();
+        Map<Node<N>, Double> h = new HashMap<>();
+        Map<Node<N>, Set<Path<N>>> solutionCosts = new HashMap<>();
 
         open.add(startNode);
         paths.put(startNode, new HashSet<>());
         paths.get(startNode).add(new Path<>(startNode, null, zero));
-        h.put(startNode, heuristicFunction.apply(graph, startNode, endNodes, paths));
+        h.put(startNode, heuristicFunction.apply(startNode, endNodes, paths));
 
         for (int i = 0; !open.isEmpty(); i++) {
-            var notDominated = getNotDominated(open, paths, solutionCosts, graph, endNodes);
+            var notDominated = getNotDominated(open, paths, solutionCosts, endNodes);
 
             if (notDominated.isEmpty()) {
-                logger.log(i, open, paths, graph, endNodes, null, notDominated, closed, solutionCosts);
+                logger.log(i, open, paths, endNodes, null, notDominated, closed, solutionCosts);
                 break;
             }
 
-            Node currentNode = notDominated.stream().min(Comparator.comparingDouble(h::get)).get();
-            logger.log(i, open, paths, graph, endNodes, currentNode, notDominated, closed, solutionCosts);
+            Node<N> currentNode = notDominated.stream().min(Comparator.comparingDouble(h::get)).get();
+            logger.log(i, open, paths, endNodes, currentNode, notDominated, closed, solutionCosts);
             open.remove(currentNode);
             closed.add(currentNode);
 
-            if (endNodes.contains(currentNode)) {
+            if (endNodes.test(currentNode)) {
                 solutionCosts.put(currentNode, paths.get(currentNode));
-                for (Node node : solutionCosts.keySet()) {
+                for (var node : solutionCosts.keySet()) {
                     removeDominated(paths.get(currentNode), paths.get(node));
                 }
                 continue;
             }
 
-            for (Node child : Graphs.successorListOf(graph, currentNode)) {
-                Costs cost = graph.getEdge(currentNode, child).label();
-                if (!closed.contains(child) && !open.contains(child)) {
-                    paths.put(child, new HashSet<>());
-                    for (Path<Node> path : paths.get(currentNode)) {
-                        paths.get(child).add(new Path<>(child, path, path.cost().add(cost)));
+            for (var child : currentNode.successors()) {
+                Costs cost = child.cost();
+                if (!closed.contains(child.target()) && !open.contains(child.target())) {
+                    paths.put(child.target(), new HashSet<>());
+                    for (var path : paths.get(currentNode)) {
+                        paths.get(child.target()).add(new Path<>(child.target(), path, path.cost().add(cost)));
                     }
-                    removeDominated(paths.get(child), paths.get(child));
-                    h.put(child, heuristicFunction.apply(graph, child, endNodes, paths));
-                    open.add(child);
+                    removeDominated(paths.get(child.target()), paths.get(child.target()));
+                    h.put(child.target(), heuristicFunction.apply(child.target(), endNodes, paths));
+                    open.add(child.target());
                 } else {
                     boolean changed = false;
-                    for (Path<Node> path : paths.get(currentNode)) {
-                        Path<Node> newPath = new Path<>(child, path, path.cost().add(cost));
-                        if (!isDominatedOrEqual(newPath, paths.get(child))) {
-                            paths.get(child).add(newPath);
+                    for (Path<N> path : paths.get(currentNode)) {
+                        Path<N> newPath = new Path<>(child.target(), path, path.cost().add(cost));
+                        if (!isDominatedOrEqual(newPath, paths.get(child.target()))) {
+                            paths.get(child.target()).add(newPath);
                             changed = true;
                         }
                     }
-                    removeDominated(paths.get(child), paths.get(child));
+                    removeDominated(paths.get(child.target()), paths.get(child.target()));
                     if (changed) {
-                        open.add(child);
-                        closed.remove(child);
+                        open.add(child.target());
+                        closed.remove(child.target());
                     }
                 }
             }
         }
 
-        List<Node> toRemove = new ArrayList<>(); // velocizzabile?
-        for (Node node : solutionCosts.keySet()) {
+        List<Node<N>> toRemove = new ArrayList<>(); // velocizzabile?
+        for (var node : solutionCosts.keySet()) {
             if (solutionCosts.get(node).isEmpty())
                 toRemove.add(node);
         }
-        for (Node remove : toRemove) {
+        for (var remove : toRemove) {
             solutionCosts.remove(remove);
         }
         return solutionCosts;
     }
 
-    public static <Node> Set<Path<Node>> selectionFunction(DefaultDirectedWeightedGraph<Node, LabeledEdge<Costs>> graph,
-            Node node, Map<Node, Set<Path<Node>>> paths, Set<Node> endNodes) {
-        if (endNodes.contains(node)) {
+    public static <N> Set<Path<N>> selectionFunction(Node<N> node, Map<Node<N>, Set<Path<N>>> paths, Predicate<Node<N>> endNodes) {
+        if (endNodes.test(node)) {
             return paths.get(node);
         }
-        Set<Path<Node>> result = new HashSet<>();
-        for (var child : Graphs.successorListOf(graph, node)) {
-            Costs cost = graph.getEdge(node, child).label();
+        Set<Path<N>> result = new HashSet<>();
+        for (var child : node.successors()) {
+            Costs cost = child.cost();
             for (var path : paths.get(node)) {
-                result.add(new Path<>(child, path, path.cost().add(cost)));
+                result.add(new Path<>(child.target(), path, path.cost().add(cost)));
             }
         }
         removeDominated(result, result);
         return result;
     }
 
-    private static <Node> Set<Node> getNotDominated(Set<Node> open, Map<Node, Set<Path<Node>>> paths,
-            Map<Node, Set<Path<Node>>> solutionCosts, DefaultDirectedWeightedGraph<Node, LabeledEdge<Costs>> graph,
-            Set<Node> endNodes) {
-        Set<Node> result = new HashSet<>();
-        for (Node node : open) {
-            Set<Path<Node>> nodePaths = selectionFunction(graph, node, paths, endNodes);
+    private static <N> Set<Node<N>> getNotDominated(Set<Node<N>> open, Map<Node<N>, Set<Path<N>>> paths,
+            Map<Node<N>, Set<Path<N>>> solutionCosts, Predicate<Node<N>> endNodes) {
+        Set<Node<N>> result = new HashSet<>();
+        for (var node : open) {
+            var nodePaths = selectionFunction(node, paths, endNodes);
             a: for (var path : nodePaths) {
                 for (var otherNode : open) {
                     if (otherNode == node) {
                         continue;
                     }
-                    if (isDominated(path, selectionFunction(graph, otherNode, paths, endNodes))) {
+                    if (isDominated(path, selectionFunction(otherNode, paths, endNodes))) {
                         continue a;
                     }
                 }
@@ -141,9 +136,9 @@ public class Moa {
         return result;
     }
 
-    private static <Node> void removeDominated(Set<Path<Node>> paths, Set<Path<Node>> otherPaths) {
-        Set<Path<Node>> toRemove = new HashSet<>(); // velocizzabile?
-        for (Path<Node> path : paths) {
+    private static <N> void removeDominated(Set<Path<N>> paths, Set<Path<N>> otherPaths) {
+        Set<Path<N>> toRemove = new HashSet<>(); // velocizzabile?
+        for (Path<N> path : paths) {
             if (isDominated(path, otherPaths)) {
                 toRemove.add(path);
             }

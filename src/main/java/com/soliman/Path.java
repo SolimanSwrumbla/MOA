@@ -1,6 +1,6 @@
 package com.soliman;
 
-public record Path<Node>(Node actual, Path<Node> previous, Costs cost) {
+public record Path<N>(Node<N> actual, Path<N> previous, Costs cost) {
     public String pathToString() {
         if (previous == null)
             return actual.toString();
