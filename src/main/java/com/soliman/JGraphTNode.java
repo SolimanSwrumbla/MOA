@@ -29,7 +29,7 @@ public class JGraphTNode implements Node<String> {
     public boolean equals(Object obj) {
         if (!(obj instanceof JGraphTNode node))
             return false;
-        return graph.equals(node.graph) && startNode.equals(node.startNode);
+        return graph == node.graph && startNode.equals(node.startNode);
     }
 
     @Override
@@ -39,6 +39,6 @@ public class JGraphTNode implements Node<String> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(graph, startNode);
+        return startNode.hashCode();
     }
 }

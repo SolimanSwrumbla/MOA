@@ -37,7 +37,7 @@ public class Moa {
 
         for (int i = 0; !open.isEmpty(); i++) {
             var notDominated = getNotDominated(open, paths, solutionCosts, endNodes);
-
+            System.out.println(i);
             if (notDominated.isEmpty()) {
                 logger.log(i, open, paths, endNodes, null, notDominated, closed, solutionCosts);
                 break;

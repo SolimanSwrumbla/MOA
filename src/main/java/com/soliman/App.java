@@ -18,8 +18,10 @@ public class App {
         boolean directional = true;
         Logger<String> logger = Logger.noLogger();
         Integer costLength = null;
+        String input = null;
 
         try (BufferedReader reader = new BufferedReader(new FileReader("settings.txt"))) {
+            input = reader.readLine().split(":")[1].trim();
             startNode = reader.readLine().split(":")[1].trim().toUpperCase();
             String endNodesString = reader.readLine().split(":")[1].trim().toUpperCase();
             if (startNode.isEmpty() && endNodesString.isEmpty()) {
@@ -57,7 +59,7 @@ public class App {
             e.printStackTrace();
         }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("input.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(input))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.isBlank())

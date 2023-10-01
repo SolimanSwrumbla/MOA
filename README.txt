@@ -19,7 +19,7 @@ Archi e Costi: Ogni riga successiva rappresenta un arco nel formato NODO_SORGENT
 Utilizzo:
 
 Modificare il file input.txt seguendo le istruzioni sottostanti.
-Eseguire il programma App.java. --> "mvn compile exec:java -q"
+Eseguire il programma App.java. --> "mvn exec:java -q"
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Formato del File input.txt:

@@ -24,13 +24,14 @@ public class ExplainationLogger implements Logger<String> {
             var NewG = String.join("", paths.get(node).stream().map(p -> p.cost().toString()).toList());
             var NewF = String.join("", Moa.selectionFunction(node, paths, endNodes).stream()
                     .map(p -> p.cost().toString()).collect(Collectors.toSet()));
+
             if (node.equals(prescelto))
                 System.out.format(" | %4s** %40s %40s", node, NewG, NewF);
             else if (ND.contains(node))
                 System.out.format(" | %4s*  %40s %40s", node, NewG, NewF);
             else
                 System.out.format(" | %4s   %40s %40s", node, NewG, NewF);
-            if (i == open.size() / 2)
+            if ((open.size() % 2 == 0 && i == open.size() / 2 - 1) || (open.size() % 2 != 0 && i == open.size() / 2))
                 System.out.format("%40s %60s", closed, solutionCosts);
             System.out.println();
             i++;
