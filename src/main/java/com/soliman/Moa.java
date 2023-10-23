@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class Moa {
+    // Verifica se un percorso è dominato da altri percorsi
     public static <N> boolean isDominated(Path<N> path, Set<Path<N>> otherPaths) {
         for (var otherPath : otherPaths) {
             if (otherPath.cost().isLessThan(path.cost())) {
@@ -13,6 +14,7 @@ public class Moa {
         return false;
     }
 
+    // Verifica se un percorso è dominato o uguale a altri percorsi
     public static <N> boolean isDominatedOrEqual(Path<N> path, Set<Path<N>> otherPaths) {
         for (var otherPath : otherPaths) {
             if (path.equals(otherPath) || otherPath.cost().isLessThan(path.cost())) {
@@ -22,22 +24,26 @@ public class Moa {
         return false;
     }
 
+    // Algoritmo di ricerca MOA*
     public static <N> Map<Node<N>, Set<Path<N>>> search(Node<N> startNode, Predicate<Node<N>> endNodes, Costs zero,
             HeuristicFunction<N> heuristicFunction, Logger<N> logger) {
+
+        // Inizializzazione delle strutture dati
         Set<Node<N>> open = new HashSet<>();
         Set<Node<N>> closed = new HashSet<>();
         Map<Node<N>, Set<Path<N>>> paths = new HashMap<>();
         Map<Node<N>, Double> h = new HashMap<>();
         Map<Node<N>, Set<Path<N>>> solutionCosts = new HashMap<>();
 
+        // Inizializzazione con il nodo di partenza
         open.add(startNode);
         paths.put(startNode, new HashSet<>());
         paths.get(startNode).add(new Path<>(startNode, null, zero));
         h.put(startNode, heuristicFunction.apply(startNode, endNodes, paths));
 
+        // Ciclo principale dell'algoritmo
         for (int i = 0; !open.isEmpty(); i++) {
             var notDominated = getNotDominated(open, paths, solutionCosts, endNodes);
-            System.out.println(i);
             if (notDominated.isEmpty()) {
                 logger.log(i, open, paths, endNodes, null, notDominated, closed, solutionCosts);
                 break;
@@ -84,7 +90,8 @@ public class Moa {
             }
         }
 
-        List<Node<N>> toRemove = new ArrayList<>(); // velocizzabile?
+        // Rimozione dei nodi senza soluzione
+        List<Node<N>> toRemove = new ArrayList<>();
         for (var node : solutionCosts.keySet()) {
             if (solutionCosts.get(node).isEmpty())
                 toRemove.add(node);
@@ -95,6 +102,7 @@ public class Moa {
         return solutionCosts;
     }
 
+    // Funzione di selezione dei percorsi
     public static <N> Set<Path<N>> selectionFunction(Node<N> node, Map<Node<N>, Set<Path<N>>> paths,
             Predicate<Node<N>> endNodes) {
         if (endNodes.test(node)) {
@@ -111,6 +119,7 @@ public class Moa {
         return result;
     }
 
+    // Ottiene i nodi non dominati
     private static <N> Set<Node<N>> getNotDominated(Set<Node<N>> open, Map<Node<N>, Set<Path<N>>> paths,
             Map<Node<N>, Set<Path<N>>> solutionCosts, Predicate<Node<N>> endNodes) {
         Set<Node<N>> result = new HashSet<>();
@@ -137,8 +146,9 @@ public class Moa {
         return result;
     }
 
+    // Rimuove i percorsi dominati
     private static <N> void removeDominated(Set<Path<N>> paths, Set<Path<N>> otherPaths) {
-        Set<Path<N>> toRemove = new HashSet<>(); // velocizzabile?
+        Set<Path<N>> toRemove = new HashSet<>();
         for (Path<N> path : paths) {
             if (isDominated(path, otherPaths)) {
                 toRemove.add(path);

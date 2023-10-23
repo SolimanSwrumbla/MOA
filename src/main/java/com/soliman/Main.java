@@ -8,11 +8,13 @@ import java.util.function.Predicate;
 
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 
-public class App {
+public class Main {
     public static void main(String[] args) {
 
+        // Creazione del grafo orientato pesato
         DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph = new DefaultDirectedWeightedGraph<>(null, null);
 
+        // Inizializzazione di variabili e impostazioni iniziali
         String startNode = "";
         Set<String> endNodes = new HashSet<>();
         boolean directional = true;
@@ -20,6 +22,7 @@ public class App {
         Integer costLength = null;
         String input = null;
 
+        // Lettura delle impostazioni da un file
         try (BufferedReader reader = new BufferedReader(new FileReader("settings.txt"))) {
             input = reader.readLine().split(":")[1].trim();
             startNode = reader.readLine().split(":")[1].trim().toUpperCase();
@@ -59,6 +62,7 @@ public class App {
             e.printStackTrace();
         }
 
+        // Lettura del grafo da un file e creazione del grafo
         try (BufferedReader reader = new BufferedReader(new FileReader(input))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -103,11 +107,13 @@ public class App {
             e.printStackTrace();
         }
 
+        // Controllo se il nodo iniziale è presente nel grafo
         if (!graph.containsVertex(startNode)) {
             System.err.println("\nErrore: Il nodo iniziale non e' presente nel grafo.\n");
             return;
         }
 
+        // Stampa dell'intestazione per la registrazione delle iterazioni
         if (logger instanceof ExplainationLogger) {
             System.out.println(
                     "\n-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
@@ -121,17 +127,19 @@ public class App {
         } else
             System.out.println();
 
+        // Esecuzione dell'algoritmo MOA* e recupero delle soluzioni
         var solutionPath = Moa.search(new JGraphTNode(graph, startNode), n ->
         endNodes.contains(n.value()), new Costs(new double[costLength]),
-        App::heuristicFunction, logger);
+        Main::heuristicFunction, logger);
         //var solutionPath = Moa.search(new RandomNode(), n -> Integer.parseInt(n.value()) >= 95, new Costs(0, 0),
-        //        App::heuristicFunction, logger);
+        //        Main::heuristicFunction, logger);
 
         if (logger instanceof ExplainationLogger) {
             System.out.println(
                     "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         }
 
+        // Stampa delle soluzioni trovate
         int i = 1;
         for (var endNode : solutionPath.keySet()) {
             for (var path : solutionPath.get(endNode)) {
@@ -142,6 +150,7 @@ public class App {
         System.out.println();
     }
 
+    // Definizione della funzione euristica di esempio
     public static <T> double heuristicFunction(Node<T> node, Predicate<Node<T>> endNodes,
             Map<Node<T>, Set<Path<T>>> paths) {
         if (endNodes.test(node)) {

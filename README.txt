@@ -7,7 +7,7 @@ Di seguito, le istruzioni su come utilizzare l'algoritmo modificando il file set
 Funzionamento:
 
 Il programma legge le impostazioni da un file di testo chiamato "settings.txt", contenente le seguenti informazioni:
-File: Indica il nomde del file contenente l'elenco degli archi nel formato NODO_SORGENTE | (COSTO1 COSTO2) | NODO_DESTINAZIONE.
+File: Indica il nome del file contenente l'elenco degli archi nel formato NODO_SORGENTE | (COSTO1 COSTO2) | NODO_DESTINAZIONE.
 Nodo iniziale: Indica da quale nodo iniziare il percorso.
 Nodi finali: Indica quali nodi si desidera raggiungere.
 Direzionale: Specifica se gli archi del grafo sono direzionati (S per sì, N per no).

@@ -7,10 +7,12 @@ import java.util.Objects;
 public class Costs {
     private final double[] costs;
 
+    // Costruttore che accetta una sequenza varargs di costi
     public Costs(double... costs) {
         this.costs = costs.clone();
     }
 
+    // Verifica se i costi sono maggiori o uguali rispetto a un altro oggetto Costs
     public boolean isGreaterOrEqualThan(Costs other) {
         if (costs.length != other.costs.length)
             return false;
@@ -22,10 +24,12 @@ public class Costs {
         return true;
     }
 
+    // Verifica se i costi sono strettamente maggiori rispetto a un altro oggetto Costs
     public boolean isGreaterThan(Costs other) {
         return isGreaterOrEqualThan(other) && !equals(other);
     }
 
+    // Verifica se i costi sono minori o uguali rispetto a un altro oggetto Costs
     public boolean isLessOrEqualThan(Costs other) {
         if (costs.length != other.costs.length)
             return false;
@@ -37,10 +41,12 @@ public class Costs {
         return true;
     }
 
+    // Verifica se i costi sono strettamente minori rispetto a un altro oggetto Costs
     public boolean isLessThan(Costs other) {
         return isLessOrEqualThan(other) && !equals(other);
     }
 
+    // Somma i costi con un altro oggetto Costs
     public Costs add(Costs other) {
         if (costs.length != other.costs.length) {
             throw new IllegalArgumentException(
@@ -53,6 +59,7 @@ public class Costs {
         return new Costs(newCosts);
     }
 
+    // Calcola la somma totale dei costi
     public double sum() {
         double total = 0.0;
         for (double cost : costs) {
@@ -62,6 +69,7 @@ public class Costs {
     }
 
     @Override
+    // Verifica l'uguaglianza con un altro oggetto
     public boolean equals(Object obj) {
         if (!(obj instanceof Costs other))
             return false;
@@ -69,11 +77,13 @@ public class Costs {
     }
 
     @Override
+    // Calcola l'hash code basato sugli array di costi
     public int hashCode() {
         return Objects.hash(costs);
     }
 
     @Override
+    // Converte l'oggetto in una rappresentazione testuale
     public String toString() {
         StringBuilder sb = new StringBuilder("(");
         for (int i = 0; i < costs.length; i++) {
