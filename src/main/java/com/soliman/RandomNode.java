@@ -29,6 +29,11 @@ public class RandomNode implements Node<String> {
     }
 
     @Override
+    public int costLength() {
+        return 2;
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof RandomNode node))
             return false;

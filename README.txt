@@ -45,7 +45,7 @@ Spiegazione (S/N): N
 ------------------------------------------------------------------------------------------------------------------------------------
 Formato del file input.txt:
 
-NODO_SORGENTE | (COSTO1 COSTO2) | NODO_DESTINAZIONE
+NODO_SORGENTE | (COSTO_1 ... COSTO_n) | NODO_DESTINAZIONE
 ...
 
 Inserire gli archi e i costi nel formato NODO_SORGENTE | (COSTO1 COSTO2) | NODO_DESTINAZIONE per definire la struttura del grafo.
