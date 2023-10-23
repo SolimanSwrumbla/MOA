@@ -13,7 +13,7 @@ public class JGraphTNode implements Node<String> {
     private String startNode;
     private int costLength;
 
-    public static JGraphTNode fromFile(String input, boolean directional, String startNode){
+    public static JGraphTNode fromFile(String input, String startNode, boolean directional){
         // Creazione del grafo orientato pesato
         DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph = new DefaultDirectedWeightedGraph<>(null, null);
 

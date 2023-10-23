@@ -70,8 +70,8 @@ public class Main {
         } else
             System.out.println();
 
-        //Node<String> graph = CustomNode.detectCostLength(startNode, input, directional);
-        Node<String> graph = JGraphTNode.fromFile(input, directional, startNode);
+        //Node<String> graph = CustomNode.detectCostLength(input, startNode, directional);
+        Node<String> graph = JGraphTNode.fromFile(input, startNode, directional);
 
         // Esecuzione dell'algoritmo MOA* e recupero delle soluzioni
         var solutionPath = Moa.search(graph, n -> endNodes.contains(n.value()), new Costs(new double[graph.costLength()]),

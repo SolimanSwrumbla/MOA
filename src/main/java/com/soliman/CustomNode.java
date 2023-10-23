@@ -13,7 +13,7 @@ public class CustomNode implements Node<String> {
     private int costLength;
     private boolean directional;
 
-    public static CustomNode detectCostLength(String value, String filename, boolean directional) {
+    public static CustomNode detectCostLength(String filename, String value, boolean directional) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line = reader.readLine().split("\\s+\\|\\s+")[1];
             String[] costs = line.trim().replace(",", ".").replace("(", "").replace(")", "").split("\\s+");
