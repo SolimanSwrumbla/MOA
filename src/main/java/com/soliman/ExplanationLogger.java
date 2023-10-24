@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class ExplainationLogger implements Logger<String> {
+public class ExplanationLogger implements Logger<String> {
     @Override
     public void log(int k, Set<Node<String>> open, Map<Node<String>, Set<Path<String>>> paths,
             Predicate<Node<String>> endNodes, Node<String> prescelto, Set<Node<String>> ND, Set<Node<String>> closed,

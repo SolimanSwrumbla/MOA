@@ -8,27 +8,32 @@ import java.util.Arrays;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 
-public class JGraphTNode implements Node<String> {
+public class StaticNode implements Node<String> {
     private DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph;
     private String startNode;
     private int costLength;
 
-    public static JGraphTNode fromFile(String input, String startNode, boolean directional){
+    // Costruttore privato
+    private StaticNode(DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph, String startNode, int costLength) {
+        this.graph = graph;
+        this.startNode = startNode;
+        this.costLength = costLength;
+    }
+
+    // Metodo statico per creare un'istanza di StaticNode da un file
+    public static StaticNode fromFile(String input, String startNode, boolean directional) {
         // Creazione del grafo orientato pesato
         DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph = new DefaultDirectedWeightedGraph<>(null, null);
-
         Integer costLength = null;
 
         // Lettura del grafo da un file e creazione del grafo
         try (BufferedReader reader = new BufferedReader(new FileReader(input))) {
-            
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.isBlank())
                     continue;
                 String[] parts = line.split("\\s*\\|\\s*");
                 if (parts.length != 3) {
-                    System.out.println(parts.length);
                     System.err.println("\nErrore: Formato della linea invalido : " + line);
                     continue;
                 }
@@ -67,23 +72,17 @@ public class JGraphTNode implements Node<String> {
 
         // Controllo se il nodo iniziale è presente nel grafo
         if (!graph.containsVertex(startNode)) {
-            System.err.println("\nErrore: Il nodo iniziale non e' presente nel grafo.\n");
+            System.err.println("\nErrore: Il nodo iniziale non è presente nel grafo.\n");
             return null;
         }
 
-        return new JGraphTNode(graph, startNode, costLength);
-    }
-
-    public JGraphTNode(DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph, String startNode, int costLength) {
-        this.graph = graph;
-        this.startNode = startNode;
-        this.costLength = costLength;
+        return new StaticNode(graph, startNode, costLength);
     }
 
     @Override
     public Iterable<Child<String>> successors() {
         return Graphs.successorListOf(graph, startNode).stream()
-                .map(t -> new Child<>(new JGraphTNode(graph, t, costLength), graph.getEdge(startNode, t).label())).toList();
+                .map(t -> new Child<>(new StaticNode(graph, t, costLength), graph.getEdge(startNode, t).label())).toList();
     }
 
     @Override
@@ -93,7 +92,7 @@ public class JGraphTNode implements Node<String> {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof JGraphTNode node))
+        if (!(obj instanceof StaticNode node))
             return false;
         return graph == node.graph && startNode.equals(node.startNode);
     }

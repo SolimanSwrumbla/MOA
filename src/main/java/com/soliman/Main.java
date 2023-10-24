@@ -9,18 +9,20 @@ import java.util.function.Predicate;
 public class Main {
     public static void main(String[] args) {
 
-        // Inizializzazione di variabili e impostazioni iniziali
+        // Inizializzazione delle variabili e impostazioni iniziali
+        String input = null;
         String startNode = "";
         Set<String> endNodes = new HashSet<>();
         boolean directional = true;
         Logger<String> logger = Logger.noLogger();
-        String input = null;
+        boolean dynamicGraph = false;
 
         // Lettura delle impostazioni da un file
         try (BufferedReader reader = new BufferedReader(new FileReader("settings.txt"))) {
             input = reader.readLine().split(":")[1].trim();
             startNode = reader.readLine().split(":")[1].trim().toUpperCase();
             String endNodesString = reader.readLine().split(":")[1].trim().toUpperCase();
+
             if (startNode.isEmpty() && endNodesString.isEmpty()) {
                 System.err.println("\nErrore: Nessun nodo iniziale e finale.\n");
                 return;
@@ -44,20 +46,29 @@ public class Main {
                 directional = direct.equalsIgnoreCase("S");
             }
 
-            String explaination = reader.readLine().split(":")[1].trim();
-            if (direct.isBlank()) {
+            String explanation = reader.readLine().split(":")[1].trim();
+            if (explanation.isBlank()) {
                 System.out.println("\nErrore: Opzione spiegazione vuota. (Default N).\n");
-            } else if (!direct.equalsIgnoreCase("S") && !direct.equalsIgnoreCase("N")) {
+            } else if (!explanation.equalsIgnoreCase("S") && !explanation.equalsIgnoreCase("N")) {
                 System.err.println("\nErrore: Opzione spiegazione non valida. Utilizzare 'S' o 'N'. (Default N).");
             } else {
-                logger = explaination.equalsIgnoreCase("S") ? new ExplainationLogger() : Logger.noLogger();
+                logger = explanation.equalsIgnoreCase("S") ? new ExplanationLogger() : Logger.noLogger();
+            }
+
+            String dynamic = reader.readLine().split(":")[1].trim();
+            if (dynamic.isBlank()) {
+                System.out.println("\nErrore: Opzione grafo dinamico vuota. (Default N).\n");
+            } else if (!dynamic.equalsIgnoreCase("S") && !dynamic.equalsIgnoreCase("N")) {
+                System.err.println("\nErrore: Opzione grafo dinamico non valida. Utilizzare 'S' o 'N'. (Default N).");
+            } else {
+                dynamicGraph = dynamic.equalsIgnoreCase("S");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         // Stampa dell'intestazione per la registrazione delle iterazioni
-        if (logger instanceof ExplainationLogger) {
+        if (logger instanceof ExplanationLogger) {
             System.out.println(
                     "\n-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
             System.out.println("                                             OPEN");
@@ -67,20 +78,21 @@ public class Main {
                     "  k       n                                 New G(n)                                 New F(n)                                  CLOSED                                                     e GOALS");
             System.out.println(
                     "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-        } else
+        } else {
             System.out.println();
+        }
 
-        //Node<String> graph = CustomNode.detectCostLength(input, startNode, directional);
-        Node<String> graph = JGraphTNode.fromFile(input, startNode, directional);
+        // Creazione del grafo
+        Node<String> graph = dynamicGraph ? DynamicNode.detectCostLength(input, startNode, directional) : StaticNode.fromFile(input, startNode, directional);
 
         // Esecuzione dell'algoritmo MOA* e recupero delle soluzioni
         var solutionPath = Moa.search(graph, n -> endNodes.contains(n.value()), new Costs(new double[graph.costLength()]),
-        Main::heuristicFunction, logger);
+                Main::heuristicFunction, logger);
 
         //var solutionPath = Moa.search(new RandomNode(), n -> Integer.parseInt(n.value()) >= 95, new Costs(0, 0),
         //        Main::heuristicFunction, logger);
 
-        if (logger instanceof ExplainationLogger) {
+        if (logger instanceof ExplanationLogger) {
             System.out.println(
                     "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         }

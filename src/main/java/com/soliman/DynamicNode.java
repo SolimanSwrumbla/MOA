@@ -7,27 +7,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class CustomNode implements Node<String> {
+public class DynamicNode implements Node<String> {
     private String value;
     private String filename;
     private int costLength;
     private boolean directional;
 
-    public static CustomNode detectCostLength(String filename, String value, boolean directional) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String line = reader.readLine().split("\\s+\\|\\s+")[1];
-            String[] costs = line.trim().replace(",", ".").replace("(", "").replace(")", "").split("\\s+");
-            return new CustomNode(value, filename, costs.length, directional);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public CustomNode(String value, String filename, int costLength, boolean directional) {
+    // Costruttore privato
+    private DynamicNode(String value, String filename, int costLength, boolean directional) {
         this.value = value;
         this.filename = filename;
         this.costLength = costLength;
         this.directional = directional;
+    }
+
+    // Metodo statico per creare un'istanza di DynamicNode da un file
+    public static DynamicNode detectCostLength(String filename, String value, boolean directional) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line = reader.readLine().split("\\s+\\|\\s+")[1];
+            String[] costs = line.trim().replace(",", ".").replace("(", "").replace(")", "").split("\\s+");
+            return new DynamicNode(value, filename, costs.length, directional);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -48,13 +50,13 @@ public class CustomNode implements Node<String> {
                             if (target.matches(".*[,].*")) {
                                 System.err.println("\nErrore: Formato nodo invalido : " + line);
                             }
-                            children.add(new Child<>(new CustomNode(target, filename, costLength, directional),
+                            children.add(new Child<>(new DynamicNode(target, filename, costLength, directional),
                                     new Costs(convertedCosts)));
                         } catch (NumberFormatException e) {
                             System.err.println("\nErrore: Formato del costo invalido : " + line);
                         }
                     }
-                    if (directional&&parts[1].trim().equalsIgnoreCase(value)) {
+                    if (directional && parts[1].trim().equalsIgnoreCase(value)) {
                         String[] costs = parts[1].trim().replace(",", ".").replace("(", "")
                                 .replace(")", "")
                                 .split("\\s+");
@@ -64,7 +66,7 @@ public class CustomNode implements Node<String> {
                             if (target.matches(".*[,].*")) {
                                 System.err.println("\nErrore: Formato nodo invalido : " + line);
                             }
-                            children.add(new Child<>(new CustomNode(target, filename, costLength, directional),
+                            children.add(new Child<>(new DynamicNode(target, filename, costLength, directional),
                                     new Costs(convertedCosts)));
                         } catch (NumberFormatException e) {
                             System.err.println("\nErrore: Formato del costo invalido : " + line);
@@ -90,7 +92,7 @@ public class CustomNode implements Node<String> {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof CustomNode node))
+        if (!(obj instanceof DynamicNode node))
             return false;
         return value.equals(node.value);
     }

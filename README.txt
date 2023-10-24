@@ -12,6 +12,7 @@ Nodo iniziale: Indica da quale nodo iniziare il percorso.
 Nodi finali: Indica quali nodi si desidera raggiungere.
 Direzionale: Specifica se gli archi del grafo sono direzionati (S per sì, N per no).
 Spiegazione: Specifica se si desidera la stampa della spiegazione (S per sì, N per no).
+Grafo dinamico: Specifica se si desidera che il grafo venga costruito dinamicamente (S per sì, N per no).
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Utilizzo:
@@ -27,11 +28,13 @@ Nodo iniziale: START
 Nodi finali: END1, END2, ...
 Direzionale (S/N): S
 Spiegazione (S/N): N
+Grafo dinamico (S/N) : N
 
 Sostituire START con il nome del nodo iniziale.
 Sostituire END1, END2, ... con una lista separata da virgole dei nodi finali.
 Sostituire S o N nel terzo campo per specificare se gli archi sono direzionati (Default S).
 Sostituire S o N nel quarto campo per specificare se si desidera la stampa della spiegazione (Default N).
+Sostituire S o N nel quinto campo per specificare se si desidera che il grafo venga costruito dinamicamente (Default N).
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Esempio di settings.txt:
@@ -41,6 +44,7 @@ Nodo Iniziale: A
 Nodi Finali: D, E
 Direzionale (S/N): S
 Spiegazione (S/N): N
+Grafo dinamico (S/N) : N
 
 ------------------------------------------------------------------------------------------------------------------------------------
 Formato del file input.txt:
