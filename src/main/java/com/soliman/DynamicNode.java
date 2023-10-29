@@ -8,57 +8,62 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DynamicNode implements Node<String> {
+    private String filename; // Rappresentazione del grafo tramite file
     private String value;
-    private String filename;
     private int costLength;
     private boolean directional;
 
-    // Costruttore privato
-    private DynamicNode(String value, String filename, int costLength, boolean directional) {
-        this.value = value;
+    private DynamicNode(String filename, String value, int costLength, boolean directional) {
         this.filename = filename;
+        this.value = value;
         this.costLength = costLength;
         this.directional = directional;
     }
 
-    // Metodo statico per creare un'istanza di DynamicNode da un file
+    // Creazione di un'istanza di DynamicNode da un file di input
     public static DynamicNode detectCostLength(String filename, String value, boolean directional) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            // Leggi la prima riga del file per determinare la lunghezza dei costi
             String line = reader.readLine().split("\\s+\\|\\s+")[1];
-            String[] costs = line.trim().replace(",", ".").replace("(", "").replace(")", "").split("\\s+");
-            return new DynamicNode(value, filename, costs.length, directional);
+            String[] costs = line.replace(",", ".").replace("(", "").replace(")", "").trim().split("\\s+");
+            return new DynamicNode(filename, value, costs.length, directional);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    // Restituisce i successori del nodo corrente
     @Override
     public Iterable<Child<String>> successors() {
-        List<Child<String>> children = new ArrayList<>();
+        List<Child<String>> successors = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\\|");
                 if (parts.length == 3) {
+                    // Verifica se il nodo corrente è il nodo di partenza
                     if (parts[0].trim().equalsIgnoreCase(value)) {
-                        String[] costs = parts[1].trim().replace(",", ".").replace("(", "")
-                                .replace(")", "")
+                        String[] costs = parts[1].replace(",", ".").replace("(", "")
+                                .replace(")", "").trim()
                                 .split("\\s+");
                         try {
+                            // Parsa i costi in un array di double
                             double[] convertedCosts = Arrays.stream(costs).mapToDouble(Double::parseDouble).toArray();
                             String target = parts[2].toUpperCase().trim();
                             if (target.matches(".*[,].*")) {
                                 System.err.println("\nErrore: Formato nodo invalido : " + line);
                             }
-                            children.add(new Child<>(new DynamicNode(target, filename, costLength, directional),
+                            // Aggiunge il nodo di destinazione come figlio con i costi appropriati
+                            successors.add(new Child<>(new DynamicNode(filename, target, costLength, directional),
                                     new Costs(convertedCosts)));
                         } catch (NumberFormatException e) {
                             System.err.println("\nErrore: Formato del costo invalido : " + line);
                         }
                     }
-                    if (directional && parts[1].trim().equalsIgnoreCase(value)) {
-                        String[] costs = parts[1].trim().replace(",", ".").replace("(", "")
-                                .replace(")", "")
+                    // Se il grafo non è direzionale, verifica anche i collegamenti in direzione opposta
+                    if (!directional && parts[2].trim().equalsIgnoreCase(value)) {
+                        String[] costs = parts[1].replace(",", ".").replace("(", "")
+                                .replace(")", "").trim()
                                 .split("\\s+");
                         try {
                             double[] convertedCosts = Arrays.stream(costs).mapToDouble(Double::parseDouble).toArray();
@@ -66,7 +71,8 @@ public class DynamicNode implements Node<String> {
                             if (target.matches(".*[,].*")) {
                                 System.err.println("\nErrore: Formato nodo invalido : " + line);
                             }
-                            children.add(new Child<>(new DynamicNode(target, filename, costLength, directional),
+                            // Aggiunge il nodo di destinazione come figlio con i costi appropriati
+                            successors.add(new Child<>(new DynamicNode(filename, target, costLength, directional),
                                     new Costs(convertedCosts)));
                         } catch (NumberFormatException e) {
                             System.err.println("\nErrore: Formato del costo invalido : " + line);
@@ -74,7 +80,7 @@ public class DynamicNode implements Node<String> {
                     }
                 }
             }
-            return children;
+            return successors;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

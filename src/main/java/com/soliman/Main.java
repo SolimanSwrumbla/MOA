@@ -41,7 +41,7 @@ public class Main {
             if (direct.isBlank()) {
                 System.out.println("\nErrore: Opzione direzionale vuota. (Default S).\n");
             } else if (!direct.equalsIgnoreCase("S") && !direct.equalsIgnoreCase("N")) {
-                System.err.println("\nErrore: Opzione direzionale non valida. Utilizzare 'S' o 'N'. (Default S).");
+                System.out.println("\nErrore: Opzione direzionale non valida. Utilizzare 'S' o 'N'. (Default S).");
             } else {
                 directional = direct.equalsIgnoreCase("S");
             }
@@ -50,7 +50,7 @@ public class Main {
             if (explanation.isBlank()) {
                 System.out.println("\nErrore: Opzione spiegazione vuota. (Default N).\n");
             } else if (!explanation.equalsIgnoreCase("S") && !explanation.equalsIgnoreCase("N")) {
-                System.err.println("\nErrore: Opzione spiegazione non valida. Utilizzare 'S' o 'N'. (Default N).");
+                System.out.println("\nErrore: Opzione spiegazione non valida. Utilizzare 'S' o 'N'. (Default N).");
             } else {
                 logger = explanation.equalsIgnoreCase("S") ? new ExplanationLogger() : Logger.noLogger();
             }
@@ -59,7 +59,7 @@ public class Main {
             if (dynamic.isBlank()) {
                 System.out.println("\nErrore: Opzione grafo dinamico vuota. (Default N).\n");
             } else if (!dynamic.equalsIgnoreCase("S") && !dynamic.equalsIgnoreCase("N")) {
-                System.err.println("\nErrore: Opzione grafo dinamico non valida. Utilizzare 'S' o 'N'. (Default N).");
+                System.out.println("\nErrore: Opzione grafo dinamico non valida. Utilizzare 'S' o 'N'. (Default N).");
             } else {
                 dynamicGraph = dynamic.equalsIgnoreCase("S");
             }
@@ -83,14 +83,19 @@ public class Main {
         }
 
         // Creazione del grafo
-        Node<String> graph = dynamicGraph ? DynamicNode.detectCostLength(input, startNode, directional) : StaticNode.fromFile(input, startNode, directional);
-
+        Node<String> graph = dynamicGraph ? DynamicNode.detectCostLength(input, startNode, directional)
+                : StaticNode.fromFile(input, startNode, directional);
+    
         // Esecuzione dell'algoritmo MOA* e recupero delle soluzioni
-        var solutionPath = Moa.search(graph, n -> endNodes.contains(n.value()), new Costs(new double[graph.costLength()]),
+        if(graph == null)
+            return;
+        var solutionPath = Moa.search(graph, n -> endNodes.contains(n.value()),
+                new Costs(new double[graph.costLength()]),
                 Main::heuristicFunction, logger);
 
-        //var solutionPath = Moa.search(new RandomNode(), n -> Integer.parseInt(n.value()) >= 95, new Costs(0, 0),
-        //        Main::heuristicFunction, logger);
+        // var solutionPath = Moa.search(new RandomNode(), n ->
+        // Integer.parseInt(n.value()) >= 95, new Costs(0, 0),
+        // Main::heuristicFunction, logger);
 
         if (logger instanceof ExplanationLogger) {
             System.out.println(
@@ -111,18 +116,6 @@ public class Main {
     // Definizione della funzione euristica di esempio
     public static <T> double heuristicFunction(Node<T> node, Predicate<Node<T>> endNodes,
             Map<Node<T>, Set<Path<T>>> paths) {
-        if (endNodes.test(node)) {
-            return paths.get(node).stream().mapToDouble(p -> p.cost().sum()).min().orElseThrow();
-        }
-        double minCost = Double.POSITIVE_INFINITY;
-        for (var child : node.successors()) {
-            Costs cost = child.cost();
-            for (var path : paths.get(node)) {
-                double value = path.cost().sum() + cost.sum();
-                if (value < minCost)
-                    minCost = value;
-            }
-        }
-        return minCost;
+        return 0;
     }
 }

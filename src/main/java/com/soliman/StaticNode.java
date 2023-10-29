@@ -3,30 +3,27 @@ package com.soliman;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-
-import org.jgrapht.Graphs;
-import org.jgrapht.graph.DefaultDirectedWeightedGraph;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class StaticNode implements Node<String> {
-    private DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph;
+    private Map<String, List<WeightedEdge>> graph; // Rappresentazione del grafo con nodi collegati a liste di archi pesati
     private String startNode;
     private int costLength;
 
-    // Costruttore privato
-    private StaticNode(DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph, String startNode, int costLength) {
+    private StaticNode(Map<String, List<WeightedEdge>> graph, String startNode, int costLength) {
         this.graph = graph;
         this.startNode = startNode;
         this.costLength = costLength;
     }
 
-    // Metodo statico per creare un'istanza di StaticNode da un file
+    // Creazione di un'istanza di StaticNode da un file di input
     public static StaticNode fromFile(String input, String startNode, boolean directional) {
-        // Creazione del grafo orientato pesato
-        DefaultDirectedWeightedGraph<String, LabeledEdge<Costs>> graph = new DefaultDirectedWeightedGraph<>(null, null);
-        Integer costLength = null;
+        Map<String, List<WeightedEdge>> graph = new HashMap<>();
+        int costLength = -1;
 
-        // Lettura del grafo da un file e creazione del grafo
         try (BufferedReader reader = new BufferedReader(new FileReader(input))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -37,52 +34,77 @@ public class StaticNode implements Node<String> {
                     System.err.println("\nErrore: Formato della linea invalido : " + line);
                     continue;
                 }
-                String source = parts[0].toUpperCase();
+                String source = parts[0].trim().toUpperCase();
                 if (source.matches(".*[,].*")) {
                     System.err.println("\nErrore: Formato nodo invalido : " + line);
+                    continue;
                 }
-                String[] costs = parts[1].replace(",", ".").replaceAll("\\s+", " ").replace("(", "").replace(")", "")
-                        .split(" ");
-                if (costLength != null && costs.length != costLength) {
+                String target = parts[2].trim().toUpperCase();
+                if (target.matches(".*[,].*")) {
+                    System.err.println("\nErrore: Formato nodo invalido : " + line);
+                    continue;
+                }
+                if (source.equals(target))
+                    continue;
+                    
+                String[] costs = parts[1].replace(",", ".").replace("(", "")
+                        .replace(")", "").trim()
+                        .split("\\s+");
+                if (costLength == -1) {
+                    costLength = costs.length;
+                } else if (costs.length != costLength) {
                     System.err.println("\nErrore: Formato del costo invalido : " + line + "\n");
                     return null;
                 }
-                costLength = costs.length;
-                try {
-                    double[] convertedCosts = Arrays.stream(costs).mapToDouble(Double::parseDouble).toArray();
-                    String target = parts[2].toUpperCase();
-                    if (target.matches(".*[,].*")) {
-                        System.err.println("\nErrore: Formato nodo invalido : " + line);
+
+                double[] convertedCosts = new double[costs.length];
+                boolean validCost = true;
+                for (int i = 0; i < costs.length; i++) {
+                    try {
+                        convertedCosts[i] = Double.parseDouble(costs[i]);
+                    } catch (NumberFormatException e) {
+                        validCost = false;
+                        break;
                     }
-                    if (source.equals(target))
-                        continue;
-                    graph.addVertex(source);
-                    graph.addVertex(target);
-                    graph.addEdge(source, target, new LabeledEdge<>(new Costs(convertedCosts)));
-                    if (!directional) {
-                        graph.addEdge(target, source, new LabeledEdge<>(new Costs(convertedCosts)));
-                    }
-                } catch (NumberFormatException e) {
+                }
+                if (!validCost) {
                     System.err.println("\nErrore: Formato del costo invalido : " + line);
+                    continue;
+                }
+
+                graph.putIfAbsent(source, new ArrayList<>());
+                graph.get(source).add(new WeightedEdge(target, convertedCosts));
+                if (!directional) {
+                    graph.putIfAbsent(target, new ArrayList<>());
+                    graph.get(target).add(new WeightedEdge(source, convertedCosts));
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        // Controllo se il nodo iniziale è presente nel grafo
-        if (!graph.containsVertex(startNode)) {
-            System.err.println("\nErrore: Il nodo iniziale non è presente nel grafo.\n");
+        if (!graph.containsKey(startNode)) {
+            System.err.println("\nErrore: Il nodo iniziale non e' presente nel grafo.\n");
             return null;
         }
 
         return new StaticNode(graph, startNode, costLength);
     }
 
+    // Restituisce i successori del nodo corrente
     @Override
     public Iterable<Child<String>> successors() {
-        return Graphs.successorListOf(graph, startNode).stream()
-                .map(t -> new Child<>(new StaticNode(graph, t, costLength), graph.getEdge(startNode, t).label())).toList();
+        List<Child<String>> successors = new ArrayList<>();
+        List<WeightedEdge> outgoingEdges = graph.get(startNode);
+
+        if (outgoingEdges != null) {
+            for (WeightedEdge edge : outgoingEdges) {
+                String target = edge.getTarget();
+                double[] costs = edge.getCosts();
+                successors.add(new Child<>(new StaticNode(graph, target, costLength), new Costs(costs)));
+            }
+        }
+
+        return successors;
     }
 
     @Override
@@ -110,5 +132,23 @@ public class StaticNode implements Node<String> {
     @Override
     public int costLength() {
         return costLength;
+    }
+}
+
+class WeightedEdge {
+    private String target; // Nodo di destinazione
+    private double[] costs; // Costi dell'arco
+
+    public WeightedEdge(String target, double[] costs) {
+        this.target = target;
+        this.costs = costs;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public double[] getCosts() {
+        return costs;
     }
 }

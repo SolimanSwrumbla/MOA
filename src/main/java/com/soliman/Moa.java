@@ -43,6 +43,7 @@ public class Moa {
 
         // Ciclo principale dell'algoritmo
         for (int i = 0; !open.isEmpty(); i++) {
+            System.out.println(i);
             var notDominated = getNotDominated(open, paths, solutionCosts, endNodes);
             if (notDominated.isEmpty()) {
                 logger.log(i, open, paths, endNodes, null, notDominated, closed, solutionCosts);

@@ -7,7 +7,7 @@ import java.util.Objects;
 public class Costs {
     private final double[] costs;
 
-    // Costruttore che accetta una sequenza varargs di costi
+    // Costruttore che accetta una sequenza di costi
     public Costs(double... costs) {
         this.costs = costs.clone();
     }

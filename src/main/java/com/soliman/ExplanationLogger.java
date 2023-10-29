@@ -37,6 +37,5 @@ public class ExplanationLogger implements Logger<String> {
             i++;
         }
         System.out.println();
-
     }
 }
