@@ -116,6 +116,18 @@ public class Main {
     // Definizione della funzione euristica di esempio
     public static <T> double heuristicFunction(Node<T> node, Predicate<Node<T>> endNodes,
             Map<Node<T>, Set<Path<T>>> paths) {
-        return 0;
+        if (endNodes.test(node)) {
+            return paths.get(node).stream().mapToDouble(p -> p.cost().sum()).min().orElseThrow();
+        }
+        double minCost = Double.POSITIVE_INFINITY;
+        for (var child : node.successors()) {
+            Costs cost = child.cost();
+            for (var path : paths.get(node)) {
+                double value = path.cost().sum() + cost.sum();
+                if (value < minCost)
+                    minCost = value;
+            }
+        }
+        return minCost;
     }
 }
