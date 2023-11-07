@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 public class Main {
     public static void main(String[] args) {
 
-        // Inizializzazione delle variabili e impostazioni iniziali
+        // Inizializzazione di variabili e impostazioni iniziali
         String input = null;
         String startNode = "";
         Set<String> endNodes = new HashSet<>();
